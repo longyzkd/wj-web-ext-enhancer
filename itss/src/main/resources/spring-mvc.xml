@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<!-- 自动扫描且只扫描@Controller -->
+	<context:component-scan base-package="com.kingen.web" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+	</context:component-scan>
+	
+	
+	
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<!-- 将StringHttpMessageConverter的默认编码设为UTF-8 -->
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+		    	<constructor-arg value="UTF-8" />
+			</bean>
+			<!-- 将Jackson2HttpMessageConverter的默认格式化输出设为true -->
+			<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="prettyPrint" value="true"/>
+            </bean>			
+  		</mvc:message-converters>
+	</mvc:annotation-driven>
+	
+	<!-- 定义JSP文件的位置 --> 
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+			
+	<!-- 容器默认的DefaultServletHandler处理 所有静态内容与无RequestMapping处理的URL-->	
+	<mvc:default-servlet-handler/>
+	
+	<!-- 定义无需Controller的url<->view直接映射 -->
+	<mvc:view-controller path="/" view-name="redirect:/login/welcome"/>
+	
+	<!-- 注释掉以显示异常信息 -->
+	<!-- 将Controller抛出的异常转到特定View, 保持SiteMesh的装饰效果 -->
+<!-- 	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">   -->
+<!-- 		<property name="exceptionMappings">   -->
+<!-- 			<props>   -->
+<!-- 				<prop key="java.lang.Throwable">error/500</prop> -->
+<!--             </props>   -->
+<!-- 		</property>   -->
+<!--     </bean> -->
+
+	 <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">  
+         <property name="exceptionMappings">  
+             <props>  
+<!--                  <prop key="java.lang.Exception">error/500</prop>   -->
+<!--                  <prop key="java.lang.RuntimeException">error/500</prop>   -->
+<!--                  <prop key="java.lang.Throwable">error/500</prop>   -->
+                 <prop key="UnauthorizedException">error/noRealm</prop>  
+             </props>  
+         </property>    
+         <!-- 设置日志输出级别，不定义则默认不输出警告等错误日志信息 -->  
+         <property name="warnLogCategory" value="WARN"></property>  
+         <!-- 默认错误页面，当找不到上面mappings中指定的异常对应视图时，使用本默认配置 -->  
+         <property name="defaultErrorView" value="error/500"></property>  
+         <!-- 默认HTTP状态码 -->  
+         <property name="defaultStatusCode" value="500"></property>  
+     </bean>  
+     
+     <!-- controller @RequiresPermissions 需要 -->
+<!--     <aop:config proxy-target-class="true"></aop:config> --> <!-- 可以用aspectj ,不是必须的 -->
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+    
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    
+    <!-- 拦截器配置，拦截顺序：先执行后定义的，排在第一位的最后执行。-->
+<!-- 	<mvc:interceptors> -->
+<!-- 		<mvc:interceptor> -->
+<!-- 			<mvc:mapping path="/**" /> -->
+<!-- 			<mvc:exclude-mapping path="/"/> -->
+<!-- 			<mvc:exclude-mapping path="/login"/> -->
+<!-- 			<bean class="com.kingen.interceptor.LogInterceptor" /> -->
+<!-- 		</mvc:interceptor> -->
+		<!-- 手机视图拦截器 -->
+<!-- 		<mvc:interceptor> -->
+<!-- 			<mvc:mapping path="/**" /> -->
+<!-- 			<bean class="com.thinkgem.jeesite.modules.sys.interceptor.MobileInterceptor" /> -->
+<!-- 		</mvc:interceptor> -->
+<!-- 	</mvc:interceptors> -->
+</beans>
