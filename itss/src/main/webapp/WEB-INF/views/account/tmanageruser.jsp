@@ -117,6 +117,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 handler: function () {
                     storeUser.load();
                 }
+            }, '->', {
+                text: '同步到activiti',
+                iconCls: 'x-button-refresh',
+                handler:syncActiviti
             }]
         });
         
@@ -430,6 +434,39 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                                 icon: Ext.Msg.INFO,
                                 fn: function () {
                                     storeUser.load();
+                                }
+                            });
+                        },
+                        failure: function (response) {
+                            Ext.Msg.hide();
+                            var responseText = Ext.decode(response.responseText);
+                            Ext.Msg.show({
+                                title: '提示',
+                                msg: responseText.msg,
+                                buttons: Ext.Msg.OK,
+                                icon: Ext.Msg.WARNING
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        function syncActiviti() {
+
+            Ext.Msg.confirm('同步到activiti', '确认要同步到activiti吗?会清空activiti之前ID数据', function (btn) {
+                if (btn == 'yes') {
+                    Ext.Msg.wait('正在处理，请稍等......');
+                    Ext.Ajax.request({
+                        url: '<%=basePath%>org/synAllUserAndGroupToActiviti',
+                        success: function (response) {
+                            Ext.Msg.hide();
+                            var responseText = Ext.decode(response.responseText);
+                            Ext.Msg.show({
+                                title: '提示',
+                                msg: responseText.msg,
+                                buttons: Ext.Msg.OK,
+                                icon: Ext.Msg.INFO,
+                                fn: function () {
                                 }
                             });
                         },

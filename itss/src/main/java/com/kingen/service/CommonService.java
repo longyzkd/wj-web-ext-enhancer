@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -32,6 +33,7 @@ public class CommonService<T> {
 	private static Logger logger = LoggerFactory.getLogger(CommonService.class);
 	
 	
+	//@Qualifier(value="commonDao") //要配合@Autowired , // 用@Qualifier会导致泛型消失，不会具体为真正的子类dao
 	@Autowired
 	private CommonDao<T> dao;
 	

@@ -24,10 +24,10 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -44,13 +44,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.kingen.bean.User;
 import com.kingen.bean.workflow.BaseVO;
 import com.kingen.service.account.AccountService;
 import com.kingen.service.workflow.ProcessService;
 import com.kingen.service.workflow.WorkflowDeployService;
-import com.kingen.service.workflow.WorkflowService;
+import com.kingen.service.workflow.WorkflowTraceService;
+import com.kingen.util.ActivitiUtils;
 import com.kingen.util.JsonResultBuilder;
+import com.kingen.util.Page;
+import com.kingen.util.PageUtil;
 import com.kingen.util.workflow.WorkflowUtils;
 import com.kingen.web.CommonController;
 
@@ -62,13 +67,13 @@ import com.kingen.web.CommonController;
 @Controller
 @RequestMapping("/workflow")
 public class ProcessController extends CommonController{
-	private static final Logger logger = Logger.getLogger(ProcessController.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProcessController.class);
     
 	@Autowired
 	protected AccountService userService;
     
     @Autowired
-    protected WorkflowService traceService;
+    protected WorkflowTraceService traceService;
 
 	@Autowired
 	private ProcessService processService;
@@ -88,14 +93,20 @@ public class ProcessController extends CommonController{
 	 * @throws Exception
 	 */
 //	@RequiresPermissions("user:task:todoTask")
-	@RequestMapping(value = "/todoTaskList_page", method = {RequestMethod.POST, RequestMethod.GET})
-	public String todoTaskList_page(HttpSession session, Model model) throws Exception{
+	@RequestMapping(value = "/todoTask")
+	public String todoTask(HttpSession session, Model model) throws Exception{
+		
+		return "task/task-list";
+	}
+	@RequestMapping(value = "/todoTask/data")
+	public void todoTaskData(Page<BaseVO> page,HttpSession session, Model model,HttpServletRequest request, HttpServletResponse response) throws Exception{
 		String userId = getCurrentUser().getUserId();
 		User user = this.userService.unique(userId);
-		List<BaseVO> taskList = this.processService.findTodoTask(user, model);
-        model.addAttribute("tasklist", taskList);
+		page = this.processService.findTodoTask(user, page);
+//		model.addAttribute("tasklist", taskList);
 		model.addAttribute("taskType", BaseVO.CANDIDATE);
-		return "task/list_task";
+		
+		 writeJson(response,page);
 	}
 	
     /**
@@ -119,13 +130,18 @@ public class ProcessController extends CommonController{
 	 * 签收任务
 	 * @return
 	 */
-	@RequiresPermissions("user:task:claim")
+//	@RequiresPermissions("user:task:claim")
 	@RequestMapping("/claim/{taskId}")
-	public String claim(@PathVariable("taskId") String taskId, HttpSession session, RedirectAttributes redirectAttributes) throws Exception{
+	public  @ResponseBody JSONObject  claim(@PathVariable("taskId") String taskId, HttpSession session, RedirectAttributes redirectAttributes) throws Exception{
 		User user = getCurrentUser();
 		this.processService.doClaim(user, taskId);
-        redirectAttributes.addFlashAttribute("message", "任务已签收");
-        return "redirect:/processAction/todoTaskList_page";
+		JSONObject jsonObject=JsonResultBuilder.success(true).msg("任务已签收").json();
+		return jsonObject;
+		
+//        redirectAttributes.addFlashAttribute("message", "任务已签收");
+//        return "redirect:/processAction/todoTaskList_page";
+		
+		
 	}
     
     /**
@@ -236,15 +252,22 @@ public class ProcessController extends CommonController{
      * @return
      * @throws Exception
      */
-    @RequiresPermissions("admin:process:*")
-    @RequestMapping(value="/process/runningProcess_page")
-    public String listRuningProcess(Model model) throws Exception{
-    	List<ProcessInstance> list = this.processService.listRuningProcess(model);
-    	model.addAttribute("list", list);
+//    @RequiresPermissions("admin:process:*")
+    @RequestMapping(value="/process/running")
+    public String running(Model model,Page page) throws Exception{
+    	
+		return "workflow/running-process";
+    }
+    @RequestMapping(value="/process/running/data")
+    public void listRuningProcess(Page page,Model model,HttpServletResponse response) throws Exception{
+    	 page = this.processService.listRuningProcess(page);
+    	
     	model.addAttribute("taskType", BaseVO.RUNNING);
-		return "workflow/running_process";
+    	
+    	 writeJson(response,page);
     }
     
+   
     /**
      * 管理已结束的流程
      *
@@ -310,31 +333,58 @@ public class ProcessController extends CommonController{
     	return "redirect:/processAction/process/listProcess_page";
     }
     
+    
+    
+    
     /**
      * 流程定义
      * @param request
      * @return
      * @throws Exception
      */
-    @RequiresPermissions("admin:process:*")
-    @RequestMapping(value = "/process/listProcess_page")
-    public ModelAndView listProcess(HttpServletRequest request) throws Exception{
-    	ModelAndView mav = new ModelAndView("workflow/list_process");
+//    @RequiresPermissions("admin:process:*")
+    @RequestMapping(value = "/process/list")
+    public ModelAndView listProcess(HttpServletRequest request,HttpServletResponse response) throws Exception{
+    	ModelAndView mav = new ModelAndView("workflow/process-list");
+    	return mav;
+    }
+    /**
+     * 流程定义
+     * @param request
+     * @return
+     * @throws Exception
+     */
+//    @RequiresPermissions("admin:process:*")
+    @RequestMapping(value = "/process/list/data")
+    public  void listProcessData(Page page,HttpServletRequest request,HttpServletResponse response) throws Exception{
     	
     	//objects保存两个对象，Object[0]:是ProcessDefinition（流程定义），Object[1]:是Deployment（流程部署）
     	List<Object[]> objects = new ArrayList<Object[]>();
     	ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery().orderByDeploymentId().desc();
-    	int[] pageParams = PaginationThreadUtils.setPage(processDefinitionQuery.list().size());
-    	List<ProcessDefinition> processDefinitionList = processDefinitionQuery.listPage(pageParams[0], pageParams[1]);
+//    	int[] pageParams = PaginationThreadUtils.setPage(processDefinitionQuery.list().size());
+//    	List<ProcessDefinition> processDefinitionList = processDefinitionQuery.listPage(pageParams[0], pageParams[1]);
+    	page.setTotal(processDefinitionQuery.list().size());
+    	List<ProcessDefinition> processDefinitionList = processDefinitionQuery.listPage(page.getFirstResult(), page.getLimit());
+    	/*
     	for (ProcessDefinition processDefinition : processDefinitionList) {
-            String deploymentId = processDefinition.getDeploymentId();
-            Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
-            objects.add(new Object[]{processDefinition, deployment});
-        }
-    	Pagination pagination = PaginationThreadUtils.get();
-    	mav.addObject("obj", objects);
-    	mav.addObject("page", pagination.getPageStr());
-    	return mav;
+    		String deploymentId = processDefinition.getDeploymentId();
+    		Deployment deployment = repositoryService.createDeploymentQuery().deploymentId(deploymentId).singleResult();
+    		objects.add(new Object[]{processDefinition, deployment});
+    	}
+    	*/
+//    	Pagination pagination = PaginationThreadUtils.get();
+//    	mav.addObject("obj", objects);
+//    	mav.addObject("page", pagination.getPageStr());
+//    	page.setDataList(objects);
+//    	page.setDataList(processDefinitionList);
+    	
+
+     	page.setDataList(ActivitiUtils.mapSetter(processDefinitionList));
+    	writeJson(response, page);
+//    	writeJsonInclude(response, page,new String[]{"id"});
+//    	writeJackson(response, page,null,new String[]{"id"});
+    	
+//    	return page;
     }
     
     /**

@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.IdentityService;
@@ -14,8 +14,9 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.apache.log4j.Logger;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,19 +26,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.alibaba.fastjson.JSONObject;
 import com.kingen.bean.User;
 import com.kingen.bean.workflow.BaseVO;
 import com.kingen.bean.workflow.CommentVO;
 import com.kingen.bean.workflow.Vacation;
-import com.kingen.service.CommonService;
 import com.kingen.service.account.AccountService;
+import com.kingen.service.oa.vocation.VacationService;
 import com.kingen.service.workflow.ProcessService;
+import com.kingen.util.ActivitiUtils;
+import com.kingen.util.JsonResultBuilder;
 import com.kingen.web.workflow.Pagination;
 import com.kingen.web.workflow.PaginationThreadUtils;
-import com.zml.oa.util.UserUtil;
+
 
 /**
  * @ClassName: VacationAction
@@ -50,10 +55,10 @@ import com.zml.oa.util.UserUtil;
 @Controller
 @RequestMapping("/vacation")
 public class VacationController extends CommonController{
-	private static final Logger logger = Logger.getLogger(VacationController.class);
+	private static final Logger logger = LoggerFactory.getLogger(VacationController.class);
 	
 	@Autowired
-	private CommonService<Vacation> vacationService;
+	private VacationService vacationService;
 	
 	@Autowired
 	protected RuntimeService runtimeService;
@@ -99,13 +104,13 @@ public class VacationController extends CommonController{
 	 * @param model
 	 * @return
 	 */
-	@RequiresPermissions("user:vacation:toAdd")
+//	@RequiresPermissions("user:vacation:toAdd")
 	@RequestMapping(value = "/toAdd", method = RequestMethod.GET)
 	public ModelAndView toAdd(Model model){
 		if(!model.containsAttribute("vacation")) {
             model.addAttribute("vacation", new Vacation());
         }
-		return new ModelAndView("vacation/add_vacation").addObject(model);
+		return new ModelAndView("vacation/vacation-add").addObject(model);
 	}
 	
 	/**
@@ -128,78 +133,83 @@ public class VacationController extends CommonController{
      *
      * @param leave
      */
-	@RequiresPermissions("user:vacation:doAdd")
+//	@RequiresPermissions("user:vacation:doAdd")
 	@RequestMapping(value = "/doAdd", method = RequestMethod.POST)
-	public String doAdd(
+	public void  doAdd(
 			@ModelAttribute("vacation")  Vacation vacation,BindingResult results, 
 			RedirectAttributes redirectAttributes, 
-			HttpSession session, 
+			HttpSession session,  HttpServletResponse response,
 			Model model) throws Exception{
 		User user = getCurrentUser();
         
-        if(results.hasErrors()){
-        	model.addAttribute("vacation", vacation);
-        	return "vacation/add_vacation";
-        }
-        
-        
         vacation.setUserId(user.getUserId());
-        vacation.setUser_name(user.getName());
-        vacation.setTitle(user.getName()+" 的请假申请");
+        vacation.setUser_name(user.getUsername());
+        vacation.setTitle(user.getUsername()+" 的请假申请");
         vacation.setBusinessType(BaseVO.VACATION); 			//业务类型：请假申请
         vacation.setStatus(BaseVO.PENDING);					//审批中
         vacation.setApplyDate(new Date());
-        this.vacationService.doAdd(vacation);
-        String businessKey = vacation.getId().toString();
-        vacation.setBusinessKey(businessKey);
+        
+        
+        JSONObject jsonObject= new JSONObject();
         try {
         	String processInstanceId = this.processService.startVacation(vacation);
-            redirectAttributes.addFlashAttribute("message", "流程已启动，流程ID：" + processInstanceId);
+        	
+//            redirectAttributes.addFlashAttribute("message", "流程已启动，流程ID：" + processInstanceId);
+        	
+            jsonObject = JsonResultBuilder.success(true).msg("流程已启动，流程ID：" + processInstanceId).json();
             logger.info("processInstanceId: "+processInstanceId);
         } catch (ActivitiException e) {
             if (e.getMessage().indexOf("no processes deployed with key") != -1) {
                 logger.warn("没有部署流程!", e);
-                redirectAttributes.addFlashAttribute("error", "没有部署流程，请在[工作流]->[流程管理]页面点击<重新部署流程>-待完成");
+//                redirectAttributes.addFlashAttribute("error", "没有部署流程，请在[工作流]->[流程管理]页面点击<重新部署流程>-待完成");
+                
+                jsonObject = JsonResultBuilder.success(false).msg("没有部署流程，请在[工作流]->[流程管理]页面点击<重新部署流程>-待完成").json();
             } else {
                 logger.error("启动请假流程失败：", e);
-                redirectAttributes.addFlashAttribute("error", "系统内部错误！");
+                jsonObject = JsonResultBuilder.success(false).msg("系统内部错误！").json();
+//                redirectAttributes.addFlashAttribute("error", "系统内部错误！");
             }
         } catch (Exception e) {
             logger.error("启动请假流程失败：", e);
-            redirectAttributes.addFlashAttribute("error", "系统内部错误！");
+//            redirectAttributes.addFlashAttribute("error", "系统内部错误！");
+            jsonObject = JsonResultBuilder.success(false).msg("系统内部错误！").json();
         }
-		return "redirect:/vacationAction/toAdd";
+//		return "redirect:/vacationAction/toAdd";
+        writeJson(response,jsonObject); 
 	}
 	
     /**
-     * 审批请假流程
+     * 根据不同的userTask 的 ID ,跳转不同的 审批请假流程
      * @param taskId
      * @param model
      * @return
      * @throws NumberFormatException
      * @throws Exception
      */
-	@RequiresPermissions("user:vacation:toApproval") 	//*代表 经理、总监、人力
+//	@RequiresPermissions("user:vacation:toApproval") 	//*代表 经理、总监、人力
     @RequestMapping("/toApproval/{taskId}")
-    public String toApproval(@PathVariable("taskId") String taskId, Model model) throws NumberFormatException, Exception{
+    public String  toApproval(@PathVariable("taskId") String taskId, Model model) throws NumberFormatException, Exception{
     	Task task = this.taskService.createTaskQuery().taskId(taskId).singleResult();
 		// 根据任务查询流程实例
     	String processInstanceId = task.getProcessInstanceId();
 		ProcessInstance pi = this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 		Vacation vacation = (Vacation) this.runtimeService.getVariable(pi.getId(), "entity");
-		vacation.setTask(task);
+//		vacation.setTask(task);
+		
+		vacation.setTask(ActivitiUtils.mapSetterTask(task));
 		vacation.setProcessInstanceId(processInstanceId);
-		List<CommentVO> commentList = this.processService.getComments(processInstanceId);
-		String taskDefinitionKey = task.getTaskDefinitionKey();
+		List<CommentVO> commentList = this.processService.getComments(processInstanceId); // 所有的评论列表
+		String taskDefinitionKey = task.getTaskDefinitionKey();  //userTask 的 ID
 		logger.info("taskDefinitionKey: "+taskDefinitionKey);
 		String result = null;
 		if("modifyApply".equals(taskDefinitionKey)){
-			result = "vacation/modify_vacation";
+			result = "vacation/vacation-modify";
 		}else{
-			result = "vacation/audit_vacation";
+			result = "vacation/vacation-audit";
 		}
 		model.addAttribute("vacation", vacation);
 		model.addAttribute("commentList", commentList);
+		
     	return result;
     }
     
@@ -213,17 +223,17 @@ public class VacationController extends CommonController{
      * @return
      * @throws Exception
      */
-	@RequiresPermissions("user:vacation:complate")  //数据库中权限字符串为user:*:complate， 通配符*匹配到vacation所以有权限操作 
-    @RequestMapping("/complate/{taskId}")
-    public String complate(
+//	@RequiresPermissions("user:vacation:complate")  //数据库中权限字符串为user:*:complate， 通配符*匹配到vacation所以有权限操作 
+    @RequestMapping("/complete/{taskId}")
+    public @ResponseBody JSONObject complete(
     		@RequestParam("vacationId") Integer vacationId,
     		@RequestParam("content") String content,
     		@RequestParam("completeFlag") Boolean completeFlag,
     		@PathVariable("taskId") String taskId, 
     		RedirectAttributes redirectAttributes,
     		HttpSession session) throws Exception{
-    	User user = UserUtil.getUserFromSession(session);
-    	String groupType = user.getGroup().getType();
+		User user = getCurrentUser();
+    	String groupType = "";
         Vacation vacation = this.vacationService.findById(vacationId);
         Vacation baseVacation = (Vacation) this.runtimeService.getVariable(vacation.getProcessInstanceId(), "entity");
 		Map<String, Object> variables = new HashMap<String, Object>();
@@ -241,10 +251,12 @@ public class VacationController extends CommonController{
 		}
 		this.vacationService.doUpdate(vacation);
 		// 完成任务
-		this.processService.complete(taskId, content, user.getId().toString(), variables);
+		this.processService.complete(taskId, content, user.getUserId().toString(), variables);
 		
-		redirectAttributes.addFlashAttribute("message", "任务办理完成！");
-    	return "redirect:/processAction/todoTaskList_page";
+		JSONObject jsonObject = JsonResultBuilder.success(true).msg("任务办理完成！").json();
+//		redirectAttributes.addFlashAttribute("message", "任务办理完成！");
+//    	return "redirect:/processAction/todoTaskList_page";
+		return jsonObject;
     }
     
     /**
@@ -261,7 +273,7 @@ public class VacationController extends CommonController{
 	@RequiresPermissions("user:vacation:modify")
 	@RequestMapping(value = "/modifyVacation/{taskId}", method = RequestMethod.POST)
 	public String modifyVacation(
-			@ModelAttribute("vacation") @Valid Vacation vacation,
+			@ModelAttribute("vacation") Vacation vacation,
 			BindingResult results,
 			@PathVariable("taskId") String taskId,
 			@RequestParam("processInstanceId") String processInstanceId,
@@ -276,19 +288,19 @@ public class VacationController extends CommonController{
         	return "vacation/modify_vacation";
         }
 		
-		User user = UserUtil.getUserFromSession(session);
+		User user = getCurrentUser();
         
 
         Map<String, Object> variables = new HashMap<String, Object>();
-        vacation.setUserId(user.getId());
-        vacation.setUser_name(user.getName());
+        vacation.setUserId(user.getUserId());
+        vacation.setUser_name(user.getUsername());
         vacation.setBusinessType(BaseVO.VACATION);
         vacation.setApplyDate(new Date());
         vacation.setBusinessKey(vacation.getId().toString());
         vacation.setProcessInstanceId(processInstanceId);
         if(reApply){
         	//修改请假申请
-	        vacation.setTitle(user.getName()+" 的请假申请！");
+	        vacation.setTitle(user.getUsername()+" 的请假申请！");
 	        vacation.setStatus(BaseVO.PENDING);
 	        //由userTask自动分配审批权限
 //	        if(vacation.getDays() <= 3){
@@ -298,14 +310,14 @@ public class VacationController extends CommonController{
 //            }
 	        redirectAttributes.addFlashAttribute("message", "任务办理完成，请假申请已重新提交！");
         }else{
-        	vacation.setTitle(user.getName()+" 的请假申请已取消！");
+        	vacation.setTitle(user.getUsername()+" 的请假申请已取消！");
         	vacation.setStatus(BaseVO.APPROVAL_FAILED);
         	redirectAttributes.addFlashAttribute("message", "任务办理完成，已经取消您的请假申请！");
         }
         this.vacationService.doUpdate(vacation);
         variables.put("entity", vacation);
         variables.put("reApply", reApply);
-		this.processService.complete(taskId, null, user.getId().toString(), variables);
+		this.processService.complete(taskId, null, user.getUserId().toString(), variables);
 		
     	return "redirect:/processAction/todoTaskList_page";
     }

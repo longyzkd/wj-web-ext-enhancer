@@ -1,8 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2005, 2014 springside.github.io
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- *******************************************************************************/
 package com.kingen.web;
 
 import java.util.ArrayList;
@@ -18,13 +13,12 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kingen.aop.ControllerLogAnnotation;
@@ -170,10 +164,11 @@ public class UserController extends CommonController{
 	@ControllerLogAnnotation(moduleName="用户管理",option="新建用户")
 	//可以对返回值进行改造，JSON，在@AfterReturning里拿到返回值，再判断返回值，成功则保存日志，失败不保存（@AfterThrowing已经保存），
 	//这样 就保存了日志不会两条，而且有状态
-	public void saveUser(User data,String[] funidvalue,HttpServletResponse response)  {
+	public void saveUser(User data,String[] funidvalue,HttpServletResponse response,
+			@Value("#{APP_PROPERTIES['activiti.isSynActivitiIndetity']}") Boolean synToActiviti)  {
 		Json json = new Json();
 		try {
-			service.saveUser(data,funidvalue);
+			service.saveUser(data,funidvalue,synToActiviti);
 			json.setSuccess(true);
 			json.setMsg("保存成功");
 		} catch (Exception e) {//service ：回滚、记录异常日志
@@ -193,10 +188,11 @@ public class UserController extends CommonController{
 	 */
 	@RequestMapping(value="updateUser")
 	@ControllerLogAnnotation(moduleName="用户管理",option="修改用户")
-	public void updateUser(User data,String[] funidvalue,HttpServletResponse response) {
+	public void updateUser(User data,String[] funidvalue,HttpServletResponse response,
+			@Value("#{APP_PROPERTIES['activiti.isSynActivitiIndetity']}") Boolean synToActiviti) {
 		Json json = new Json();
 		try {
-			service.updateUser(data,funidvalue);
+			service.updateUser(data,funidvalue,synToActiviti);
 			json.setSuccess(true);
 			json.setMsg("保存成功");
 		} catch (Exception e) {
@@ -294,11 +290,12 @@ public class UserController extends CommonController{
 	 * 删除用户
 	 */
 	@RequestMapping(value="deleteThem")
-	public void deleteThem(String[] userIds,HttpServletResponse response) {
+	public void deleteThem(String[] userIds,HttpServletResponse response,
+			@Value("#{APP_PROPERTIES['activiti.isSynActivitiIndetity']}") Boolean synToActiviti) {
 		Json json = new Json();
 		
 		try{
-			service.delThem(Arrays.asList(userIds));
+			service.delThem(Arrays.asList(userIds),synToActiviti);
 			json.setSuccess(true);
 			json.setMsg("删除成功");
 		}catch(Exception e){

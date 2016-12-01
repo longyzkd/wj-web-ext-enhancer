@@ -9,7 +9,10 @@ import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,11 +29,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.kingen.bean.User;
 import com.kingen.util.FastjsonFilter;
-import com.kingen.util.Json;
 
 
 /**
@@ -82,7 +89,7 @@ public abstract class CommonController {
 			public void setAsText(String text) {
 				try {
 					
-					setValue(DateUtils.parseDate(text,"MM-dd-yyyy","MM/dd/yyyy","yyyy-MM-dd","yyyy/MM/dd"));
+					setValue(DateUtils.parseDate(StringUtils.trim(text),"MM-dd-yyyy","MM/dd/yyyy","yyyy-MM-dd","yyyy/MM/dd"));
 					logger.debug("日期---"+getValue());
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
@@ -94,6 +101,15 @@ public abstract class CommonController {
 	
 	public void writeJson(HttpServletResponse response,Object object) {
 		writeJsonByFilter(response,object, null, null);
+	}
+	public void writeJson(HttpServletResponse response,Object object,String[] includesProperties, String[] excludesProperties) {
+		writeJsonByFilter(response,object, includesProperties, excludesProperties);
+	}
+	public void writeJsonInclude(HttpServletResponse response,Object object, String[] includesProperties) {
+		writeJsonByFilter(response,object, includesProperties, null);
+	}
+	public void writeJson(HttpServletResponse response,Object object, String[] excludesProperties) {
+		writeJsonByFilter(response,object, null, excludesProperties);
 	}
 	/**
 	 * 将对象转换成JSON字符串，并响应回前台
@@ -141,6 +157,62 @@ public abstract class CommonController {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	/**
+	 * 将对象转换成JSON字符串，并响应回前台
+	 * 
+	 * @param object
+	 * @param includesProperties
+	 *            需要转换的属性
+	 * @param excludesProperties
+	 *            不需要转换的属性
+	 */
+	public void writeJackson(HttpServletResponse response,Object object, String[] includesProperties, String[] excludesProperties) {
+		try {
+			
+			ObjectMapper mapper = new ObjectMapper(); //转换器  
+	          
+	        String json=serializeOnlyGivenFields(object,Arrays.asList(excludesProperties));//将对象转换成json  
+			response.setContentType("text/html;charset=utf-8");
+			
+			response.getOutputStream().write(json.getBytes("UTF-8"));
+			response.getOutputStream().flush();
+			response.getOutputStream().close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static String FILTER_NAME = "fieldFilter";
+	public static String serializeOnlyGivenFields(Object o, Collection<String> fields) throws JsonProcessingException {
+		if ((fields == null) || fields.isEmpty())
+			fields = new HashSet<String>();
+
+		Set<String> properties = new HashSet<String>(fields);
+
+		SimpleBeanPropertyFilter filter = new SimpleBeanPropertyFilter.FilterExceptFilter(properties);
+		SimpleFilterProvider fProvider = new SimpleFilterProvider();
+		fProvider.addFilter(FILTER_NAME, filter);
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setAnnotationIntrospector(new AnnotationIntrospector());
+
+		String json = mapper.writer(fProvider).writeValueAsString(o);
+		return json;
+	}
+
+	private static class AnnotationIntrospector extends JacksonAnnotationIntrospector {
+		@Override
+		public Object findFilterId(Annotated a) {
+			return FILTER_NAME;
+		}
+	}
+	
+	
+	
+	
 	
 	/**
 	 * 获得request

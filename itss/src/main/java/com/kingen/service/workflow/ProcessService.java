@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
@@ -29,7 +31,8 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -39,7 +42,10 @@ import com.kingen.bean.workflow.BaseVO;
 import com.kingen.bean.workflow.CommentVO;
 import com.kingen.bean.workflow.Vacation;
 import com.kingen.service.account.AccountService;
-import com.kingen.service.oa.vocation.VacationServiceImpl;
+import com.kingen.service.oa.vocation.VacationService;
+import com.kingen.util.ActivitiUtils;
+import com.kingen.util.Page;
+import com.kingen.util.PageUtil;
 import com.kingen.web.workflow.Pagination;
 import com.kingen.web.workflow.PaginationThreadUtils;
 
@@ -49,9 +55,10 @@ import com.kingen.web.workflow.PaginationThreadUtils;
  *
  */
 @Service
+@Transactional
 public class ProcessService {
 
-	private static final Logger logger = Logger.getLogger(ProcessService.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProcessService.class);
 	
 	@Autowired
 	protected RuntimeService runtimeService;
@@ -78,10 +85,10 @@ public class ProcessService {
     ProcessEngineConfiguration processEngineConfiguration;
     
     @Autowired
-    protected WorkflowService traceService;
+    protected WorkflowTraceService traceService;
     
 	@Autowired
-	private VacationServiceImpl vacationService;
+	private VacationService vacationService;
 	
 	
 	
@@ -93,16 +100,21 @@ public class ProcessService {
      * @return
      */
 	
-    public List<BaseVO> findTodoTask(User user, Model model){
+    public  Page<BaseVO> findTodoTask(User user, Page<BaseVO> page){
 		//taskCandidateOrAssigned查询某个人的待办任务，包含已签收、候选任务<候选人范围和候选组范围>
 		TaskQuery taskQuery = this.taskService.createTaskQuery().taskCandidateOrAssigned(user.getUserId().toString());
 		Integer totalSum = taskQuery.list().size();
-		int[] pageParams = PaginationThreadUtils.setPage(totalSum);
-		Pagination pagination = PaginationThreadUtils.get();
-		List<Task> tasks = taskQuery.orderByTaskCreateTime().desc().listPage(pageParams[0], pageParams[1]);
+		
+//		int[] pageParams = PaginationThreadUtils.setPage(totalSum);
+//		Pagination pagination = PaginationThreadUtils.get();
+//		List<Task> tasks = taskQuery.orderByTaskCreateTime().desc().listPage(pageParams[0], pageParams[1]);
+		
+		page.setTotal(totalSum);
+		List<Task> tasks = taskQuery.orderByTaskCreateTime().desc().listPage(page.getFirstResult(),page.getLimit());
+
 		List<BaseVO> taskList = getBaseVOList(tasks);
-		model.addAttribute("page", pagination.getPageStr());
-		return taskList;
+		page.setDataList(taskList);
+		return page;
     } 
 
     /**
@@ -125,8 +137,10 @@ public class ProcessService {
 			for(HistoricVariableInstance var : listVar){
 				if("serializable".equals(var.getVariableTypeName()) && "entity".equals(var.getVariableName())){
 					BaseVO base = (BaseVO) var.getValue();
-					base.setHistoricProcessInstance(historicProcessInstance);
-					base.setProcessDefinition(getProcessDefinition(historicProcessInstance.getProcessDefinitionId()));
+//					base.setHistoricProcessInstance(historicProcessInstance);
+//					base.setProcessDefinition(getProcessDefinition(historicProcessInstance.getProcessDefinitionId()));
+					base.setHistoricProcessInstance(ActivitiUtils.mapSetterHistoricProcessInstance(historicProcessInstance));
+					base.setProcessDefinition(ActivitiUtils.mapSetter(getProcessDefinition(historicProcessInstance.getProcessDefinitionId())));
 					processList.add(base);
 					break;
 				}
@@ -158,8 +172,11 @@ public class ProcessService {
 			for(HistoricVariableInstance var : listVar){
 				if("serializable".equals(var.getVariableTypeName()) && "entity".equals(var.getVariableName())){
 					BaseVO base = (BaseVO) var.getValue();
-					base.setHistoricTaskInstance(historicTaskInstance);
-					base.setProcessDefinition(getProcessDefinition(historicTaskInstance.getProcessDefinitionId()));
+//					base.setHistoricTaskInstance(historicTaskInstance);
+//					base.setProcessDefinition(getProcessDefinition(historicTaskInstance.getProcessDefinitionId()));
+					
+					base.setHistoricProcessInstance(ActivitiUtils.mapSetterHistoricTaskInstance(historicTaskInstance));
+					base.setProcessDefinition(ActivitiUtils.mapSetter(getProcessDefinition(historicTaskInstance.getProcessDefinitionId())));
 					taskList.add(base);
 					break;
 				}
@@ -185,10 +202,27 @@ public class ProcessService {
             }
             //获取当前流程下的key为entity的variable
             BaseVO base = (BaseVO) this.runtimeService.getVariable(processInstance.getId(), "entity");
-            base.setTask(task);
-            base.setProcessInstance(processInstance);
-            base.setProcessDefinition(getProcessDefinition(processInstance.getProcessDefinitionId()));
+            base.setTask(ActivitiUtils.mapSetterTask(task));
+            base.setProcessInstance(ActivitiUtils.mapSetterProcessInstance(processInstance));
+            base.setProcessDefinition(ActivitiUtils.mapSetter(getProcessDefinition(processInstance.getProcessDefinitionId())));
             taskList.add(base);
+            
+            
+//            
+//            Command<?> cmdTask= new GetIdentityLinksForTaskCmd(task.getId());
+//            CommandContext cxt=processEngine.getProcessEngineConfiguration().getCommandContextFactory().createCommandContext(cmd);
+//            Context.setCommandContext(cxt);
+//            
+//            base.setTask(task);
+//           
+//            base.setProcessInstance(processInstance);
+//            
+//            
+//            
+//            Command<?> cmdPd= new GetIdentityLinksForProcessDefinitionCmd(processInstance.getProcessDefinitionId());
+//            CommandContext cxtPd=processEngine.getProcessEngineConfiguration().getCommandContextFactory().createCommandContext(cmd);
+//            Context.setCommandContext(cxt);
+//            base.setProcessDefinition(getProcessDefinition(processInstance.getProcessDefinitionId()));
         }
     	return taskList;
     }
@@ -201,7 +235,7 @@ public class ProcessService {
      */
     protected ProcessDefinition getProcessDefinition(String processDefinitionId) {
         ProcessDefinition processDefinition = this.repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
-        logger.info(processDefinition.getVersion());
+        logger.info(processDefinition.getVersion()+"");
         return processDefinition;
     }
     
@@ -334,10 +368,14 @@ public class ProcessService {
 				if (pi != null) {
 					// 查询流程参数
 					BaseVO base = (BaseVO) this.runtimeService.getVariable(pi.getId(), "entity");
-					base.setTask(task);
-		            base.setProcessInstance(pi);
-		            base.setProcessDefinition(getProcessDefinition(pi.getProcessDefinitionId()));
+//					base.setTask(task);
+//		            base.setProcessInstance(pi);
+//		            base.setProcessDefinition(getProcessDefinition(pi.getProcessDefinitionId()));
+//					
 					
+					 base.setTask(ActivitiUtils.mapSetterTask(task));
+			            base.setProcessInstance(ActivitiUtils.mapSetterProcessInstance(pi));
+			            base.setProcessDefinition(ActivitiUtils.mapSetter(getProcessDefinition(pi.getProcessDefinitionId())));
 					result.add(base);
 				}
 			}
@@ -352,20 +390,27 @@ public class ProcessService {
 
 	
 
-	
+	//service 之间调用 事务传播
 	public String startVacation(Vacation vacation) throws Exception {
+		
+		vacationService.add(vacation);
+		String businessKey = vacation.getId().toString();
+        vacation.setBusinessKey(businessKey);
+		
+		
 		// 用来设置启动流程的人员ID，引擎会自动把用户ID保存到activiti:initiator中
         identityService.setAuthenticatedUserId(vacation.getUserId().toString());
         Map<String, Object> variables = new HashMap<String, Object>();
         variables.put("entity", vacation);
+        
         //由userTask自动分配审批权限
 //        if(vacation.getDays() <= 3){
 //        	variables.put("auditGroup", "manager");
 //        }else{
 //        	variables.put("auditGroup", "director");
 //        }
-        String businessKey = vacation.getBusinessKey();
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("com.zml.oa.vacation", businessKey, variables);
+        
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("com.kingen.oa.vacation", businessKey, variables);
         String processInstanceId = processInstance.getId();
         vacation.setProcessInstanceId(processInstanceId);
         this.vacationService.doUpdate(vacation);
@@ -394,15 +439,25 @@ public class ProcessService {
 	}
 
 	
-	public List<ProcessInstance> listRuningProcess(Model model) throws Exception {
+	public Page<ProcessInstance> listRuningProcess(Page page) throws Exception {
 		ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery();
 		Integer totalSum = processInstanceQuery.list().size();
-		int[] pageParams = PaginationThreadUtils.setPage(totalSum);
-		Pagination pagination = PaginationThreadUtils.get();
-		List<ProcessInstance> list = processInstanceQuery.orderByProcessInstanceId().desc().listPage(pageParams[0], pageParams[1]);
-		model.addAttribute("page", pagination.getPageStr());
-		return list;
+//		int[] pageParams = PaginationThreadUtils.setPage(totalSum);
+//		Pagination pagination = PaginationThreadUtils.get();
+		
+		List<ProcessInstance> list = processInstanceQuery.orderByProcessInstanceId().desc().listPage(page.getFirstResult(), page.getLimit());
+		
+		
+		
+		page.setTotal(totalSum);
+		page.setDataList(ActivitiUtils.mapSetterProcessInstance(list));
+//		model.addAttribute("page", pagination.getPageStr());
+		
+		return page;
 	}
+	
+	
+	
 
 	
 	public void activateProcessInstance(String processInstanceId)

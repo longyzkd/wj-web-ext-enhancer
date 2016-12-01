@@ -1,182 +1,152 @@
-﻿<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
-<%@ include file="/WEB-INF/taglibs/taglibs.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta http-equiv="pragma" content="no-cache" />
-<meta http-equiv="cache-control" content="no-cache" />
-<meta http-equiv="expires" content="0" />    
-<title>流程定义</title>
-<script type="text/javascript" src="${ctx}/js/jquery.blockUI.js"></script>
-<script type="text/javascript">
-	$(function() {
-		$('#deploy').click(function() {
-			$('#deployFieldset').toggle('normal');
-		});
-		$('#redeploy').click(function() {
-			initialization();
-		});
-	});
-	$(function() {
-		var message = "${message}";
-		if(message != ""){
-			$( "#dialog-complete" ).dialog({
-			      modal: true,
-			      buttons: {
-			        Ok: function() {
-			          $( this ).dialog( "close" );
-			        }
-			      }
-		    });
-		}
-	});
-	function doSearch(currentPage)
-	{
-		var pageNum = document.getElementById("pageNum").value;
-		if(isNaN(pageNum))
-		{
-			alert("请输入正确的行数!");
-		}
-		else
-		{
-			document.getElementById('currentPage').value = currentPage;
-			document.forms[1].submit();
-		}
-	}
-	
-	function initialization(){
-		$.ajax({
-	        type: "POST",
-	        url: "${ctx }/processAction/process/redeploy/all",
-	        data: {},
-	        success: function (data) {
-	        	if(data == "success"){
-	        		$("#message").html("已重新部署全部流程！");
-	        	}else{
-	        		$("#message").html("重新部署流程失败！");
-	        	}
-	        	setTimeout(function () {
-	   				$( "#dialog-complete" ).dialog({
-	       			      modal: true,
-	       			      buttons: {
-	       			        Ok: function() {
-	       			          $( this ).dialog( "close" );
-	       			       	  window.location.reload();
-	       			        }
-	       			      },
-	           			  close: function() {
-	           				$("#message").html("");
-	           				window.location.reload();
-	           	          },
-	       		    	})},
-	  		    	500	//延时500ms
-	       		 );
-	        },
-	        beforeSend:function(){
-	        	$.blockUI({
-	                theme:     true,              // true to enable jQuery UI CSS support
-	                draggable: true,              // draggable option requires jquery UI
-	                title:    '提示',              // only used when theme == true
-	                message:  '<img src="${ctx }/images/ui-anim_basic_16x16.gif" alt="Loading" />正在重新部署，请稍候...'   // message to display
-	                //timeout:   2000            // close block after 2 seconds (good for demos, etc)
-	        	});
-	    	},
-	    	complete: function(){
-	    		$.unblockUI();
-	   		}
-		});
-	}
-</script>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
 
-</head>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+  	<jsp:include page="../_LayoutCommonExtJS.jsp"/>
+  	<style type="text/css">
+  		tr.x-grid-record-red .x-grid-td {
+			   background: #E6D1E3;
+			}
+			tr.x-grid-record-yellow .x-grid-td{
+			   background: #F3FEC2;
+			}
+		tr.x-grid-record-green .x-grid-td{
+		   background: #92FCCC;
+		}
+  	</style>
+	<script type="text/javascript">
+		Ext.onReady(function(){
+			
+			Ext.QuickTips.init();
 
-<body>
+			   Ext.define('ProcessModel', {
+		            extend: 'Ext.data.Model',
+		            fields: [
+		                {name: 'id',  type: 'string'},
+		                {name: 'deploymentId',   type: 'string'},
+		                {name: 'name', type: 'string'},
+		                {name: 'key', type: 'string'},
+		                {name: 'version', type: 'string'},
+		                {name: 'resourceName'},
+		                {name: 'diagramResourceName'},
+		                {name: 'suspended'},
+		               // {name: 'metaInfo.description' , mapping : 'metaInfo.description'},
+		               // {name: 'metaInfo.status' , mapping : 'metaInfo.status'}
+		                {name: 'deploymentTime' }
+		            ]
 
-	<div id="main">
-  	  <div id="dialog-complete" title="complete" style="display: none;">
-	    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 1px 5px 0;"></span>
-	  	<span id="message">${message }</span>
-	  </div>
-      <div class="sort_switch">
-          <ul id="TabsNav">
-          	  <li class="selected"><a href="#">流程定义</a></li>
-          </ul>
-      </div>
-      <div style="text-align: right;padding: 2px 1em 2px">
-		<div id="message" class="tableHue1" style="display:inline;"><b>提示：</b>点击xml或者png链接可以查看具体内容！</div>
-		<input type="button" id="deploy" value="部署流程" class="input_button4"/>
-		<input type="button" id="redeploy" value="重新部署全部流程" class="input_button4"/>
-	  </div>
-	  <fieldset id="deployFieldset" style="display: none">
-		<legend style="margin-left: 10px" align="left">部署新流程</legend>
-		<div align="left">
-		<b>支持文件格式：</b>zip、bar、bpmn、bpmn20.xml<br /><br />
-		<form action="${ctx }/processAction/process/deploy" method="post" enctype="multipart/form-data">
-			<input type="file" name="file" />
-			<input type="submit" class="input_button4" value="Submit" />
-		</form>
-		</div>
-	  </fieldset>
-	  
-      <div class="sort_content">
-      	<form action=" ${ctx }/processAction/process/listProcess_page" method="post">
-          <table class="tableHue1" width="100%" border="1" bordercolor="#a4d5e3" cellspacing="0" cellpadding="0">
-              <thead>
-                <tr>
-                  	<th>ProcessDefinitionId</th>
-					<th>DeploymentId</th>
-					<th>名称</th>
-					<th>KEY</th>
-					<th>版本号</th>
-					<th>XML</th>
-					<th>图片</th>
-					<th>部署时间</th>
-					<th>是否挂起</th>
-					<th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="tbody">
-	              <c:forEach items="${obj }" var="object">
-					<c:set var="process" value="${object[0] }" />
-					<c:set var="deployment" value="${object[1] }" />
-					<tr>
-						<td>${process.id }</td>
-						<td>${process.deploymentId }</td>
-						<td>${process.name }</td>
-						<td>${process.key }</td>
-						<td>${process.version }</td>
-						<td><a target="_blank" href='${ctx }/processAction/process/process-definition?processDefinitionId=${process.id}&resourceType=xml'>${process.resourceName }</a></td>
-						<td><a target="_blank" href='${ctx }/processAction/process/process-definition?processDefinitionId=${process.id}&resourceType=image'>${process.diagramResourceName }</a></td>
-						<td><fmt:formatDate value="${deployment.deploymentTime }"  type="both"/></td>
-						<td>${process.suspended} |
-							<c:if test="${process.suspended }">
-								<a href="${ctx }/processAction/process/updateProcessStatusByProDefinitionId?status=active&processDefinitionId=${process.id}">激活</a>
-							</c:if>
-							<c:if test="${!process.suspended }">
-								<a href="${ctx }/processAction/process/updateProcessStatusByProDefinitionId?status=suspend&processDefinitionId=${process.id}">挂起</a>
-							</c:if>
-						</td>
-						<td>
-	                        <a href='${ctx }/processAction/process/delete?deploymentId=${process.deploymentId}'>删除</a>|
-	                        <a href='${ctx }/processAction/process/redeploy/single?resourceName=${process.resourceName }&deploymentId=${process.deploymentId}'>加载</a>|
-	                        <%-- <a href='${ctx }/processAction/process/redeploy/single?resourceName=${process.resourceName }&diagramResourceName=${process.diagramResourceName }&deploymentId=${process.deploymentId}'>加载</a>| --%>
-	                        <a href='${ctx }/processAction/process/convert_to_model?processDefinitionId=${process.id}'>转换为Model</a>
-	                    </td>
-					</tr>
-				  </c:forEach>
-              	<tr>
-              		<td class="fun_area" colspan="10" align="center">${page }</td>
-              	</tr>
-              </tbody>
-          </table>
-         </form>
-      </div>
+		        });
+	       
+	       
+        
+       
+        var store = Ext.create('Ext.data.Store', {//pageSize 默认25
+            autoLoad: true,
+            model: 'ProcessModel',
+            proxy: {
+                type: 'ajax',
+                url: '<%=basePath%>workflow/process/list/data',
+                reader: { type: 'json', root: 'dataList' }
+            },
+            listeners: {
+                beforeload: function (store, options) {
+            		
+                }
+            }
+        });
+     
+
+
       
+        
+        var sm = Ext.create('Ext.selection.CheckboxModel', { mode: 'MULTI' });
+        var grid = Ext.create('Ext.grid.Panel', {
+            region: 'center',
+            store: store,
+            //dockedItems: [tbar2,tbar1],
+            selModel: sm,
+            columnLines: false,
+            viewConfig:{getRowClass:changeRowClass},
+            columns: [
+					new Ext.grid.PageRowNumberer(),
+					{ header: 'ProcessDefinitionId', dataIndex: 'id', align: 'center', flex:2},
+					{ header: 'DeploymentId', dataIndex: 'deploymentId', align: 'center', flex:1 },
+                    { header: '名称', dataIndex: 'name', align: 'center', flex:2},
+                    { header: 'KEY', dataIndex: 'key', align: 'center', flex:1},
+                    { header: '版本号', dataIndex: 'version', align: 'center', flex:2},
+                    { header: 'XML', dataIndex: 'resourceName', align: 'center', flex:2,renderer:xmlRenderer},
+                    { header: '图片', dataIndex: 'diagramResourceName', align: 'center', flex:2,renderer:picRenderer}
+//                     { header: '部署时间', dataIndex: 'deploymentTime', align: 'center', flex:2}
+//                     { header: '是否挂起', dataIndex: 'suspended', align: 'center', flex:2},
+//                     { header: '操作',  align: 'center', flex:2}
+				],
+				bbar: createPage(store)
+        });
+        
+        
+        
+        //整个页面的容器
+        Ext.create('Ext.container.Viewport', {
+            layout: 'fit',
+            border: false,
+            items: grid
+        });
+        
+        
+	       
+	    
+	    store.on('load', function(){
+	    	sm.deselect(sm.getSelection());
+	    });
+	    
+//函数区        
+//----------------------------------------------------------------------------------------------------------
+        
+	    function changeRowClass(record, rowIndex, rowParams, store){
+	        if (record.get("type") == "2") {        
+	            return 'x-grid-record-red';
+	        }
+	    } 
 
+	    
+        function typeRenderer(value) {
+        	
+            if (value=='2')  //异常日志
+                return '<img src="<%=path%>/static/jslib/ExtJs/resources/themes/icons/action_stop.gif "  alt="异常日志 " />';
+            else  
+                return '<img src="<%=path%>/static/jslib/ExtJs/resources/themes/icons/accept.png   "  alt="入口日志" />';
+        }
 
-</div>
-    
-</body>
+        
+        function picRenderer(value,meta,record) {
 
+            var url =basepath+'/workflow/process/process-definition?processDefinitionId='+record.get('id')+'&resourceType=image';
+        	 return '<a target="_blank"  href="' + url + '">' + value+ '</a>';  
+        }
+        
+        
+        function xmlRenderer(value,meta,record) {
+
+            var url =basepath+'/workflow/process/process-definition?processDefinitionId='+record.get('id')+'&resourceType=xml';
+        	 return '<a target="_blank"  href="' + url + '">' + value+ '</a>';  
+        }
+        
+        
+        
+        
+        
+        
+        
+//-----------------------------------------------------------------------------------------------------------
+		});
+	</script>
+  </head>
+  
+  <body>
+  </body>
 </html>

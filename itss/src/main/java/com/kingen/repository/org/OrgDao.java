@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.Maps;
 import com.kingen.bean.SysOrg;
+import com.kingen.bean.SysUserOrg;
 import com.kingen.bean.User;
 import com.kingen.repository.CommonDao;
 import com.kingen.util.Page;
@@ -39,6 +40,12 @@ public class OrgDao extends CommonDao<SysOrg>  {
 		
 		StringBuilder hql = new StringBuilder("from SysOrg ");
 		return     find(page, hql.toString(), parameter);
+	}
+	public List<SysUserOrg> findSysUserOrgs( String userId) {
+		Map<String,Object> parameter = Maps.newHashMap();
+		parameter.put("userId", userId);
+		StringBuilder hql = new StringBuilder("from SysUserOrg where id.userId=:userId ");
+		return     findme( hql.toString(),parameter);
 	}
 
 

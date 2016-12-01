@@ -30,8 +30,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		var basepath = '${ctx}';
 		
     	curUser = '<shiro:principal property="userId"/>';
-    	//TODO 从后台带过来
-    	pageSize=2;
 		
         Ext.grid.PageRowNumberer = Ext.extend(Ext.grid.RowNumberer, {
             width: 40,
@@ -45,11 +43,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             }
         });
         
+        //标题名称
         function titleName(action) {
-            var title = '[æ¥ç]';
+            var title = '[查看]';
             switch (action) {
-                case 'insert': title = '[æ°å¢]'; break;
-                case 'update': title = '[ä¿®æ¹]'; break;
+                case 'insert': title = '[新增]'; break;
+                case 'update': title = '[修改]'; break;
             }
             return title;
         }
@@ -80,16 +79,48 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		        });
 				//要先定义store，在其下面才行
 		        var pgCfg = new Ext.PagingToolbar({
-		            pageSize: 50,
 		            store: store,
 		            displayInfo: true,
-		            displayMsg: '显示 {0} - {1} 条记录，总共 {2} 条记录',
+		            displayMsg: '显示 {0} - {1} 条记录，总共 {2} 条记录', //start, end and total 
 		            emptyMsg: "没有记录",
 		            items: ['-', '每页显示', cboPage, '条']
 		        });
 			return pgCfg;
 		}
-       
+
+		  function checkBox(sm,idName) {
+	            var id;
+	            var selectedCount = sm.getCount();
+	            if (selectedCount == 0) {
+	                Ext.Msg.show({ title: '提示', msg: '未选中任何一个记录，请先选择！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+	                return false;
+	            } else if (selectedCount > 1) {
+	                Ext.Msg.show({ title: '提示', msg: '只能选择一个记录，不能同时选择多个！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+	                return false;
+	            } else {
+	                id = sm.getLastSelected().data[idName];
+	                return id;
+	            }
+	        }
+	        function checkBoxs(sm,idName) {
+	            var ids = [];
+	            var selectedCount = sm.getCount();
+	            if (selectedCount == 0) {
+	                Ext.Msg.show({ title: '提示', msg: '未选中任何一个用户，请先选择！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+	                return false;
+	            } else {
+	                Ext.each(sm.getSelection( ),function(cur){
+
+	                	ids.push(cur.data[idName]);
+	                	
+	                  }) ;
+
+	                
+	                return ids;
+	            }
+	        }
+
+	        
         
     </script>
     <script src="<%=path%>/static/jslib/ExtJs/vTypes.js" type="text/javascript"></script>

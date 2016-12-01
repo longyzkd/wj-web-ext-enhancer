@@ -1,9 +1,10 @@
 package com.kingen.web.workflow;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PaginationThreadUtils {
-	private static final Logger logger = Logger.getLogger(PaginationThreadUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(PaginationThreadUtils.class);
 	private static final ThreadLocal<Pagination> pagination = new ThreadLocal<Pagination>();
 
 	public static Pagination get() {

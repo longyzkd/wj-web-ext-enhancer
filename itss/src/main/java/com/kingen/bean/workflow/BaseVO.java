@@ -1,6 +1,7 @@
 package com.kingen.bean.workflow;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.persistence.Transient;
 
@@ -61,19 +62,34 @@ public class BaseVO implements Serializable{
 	private String businessKey;
 	
     // 流程任务
-    private Task task;
+    private Map<String,Object> task;
 
     // 运行中的流程实例
-    private ProcessInstance processInstance;
+    private Map<String,Object> processInstance;
 
     // 历史的流程实例
-    private HistoricProcessInstance historicProcessInstance;
+    private Map<String,Object> historicProcessInstance;
 
     // 历史任务
-    private HistoricTaskInstance historicTaskInstance;
+    private Map<String,Object> historicTaskInstance;
     
     // 流程定义
-    private ProcessDefinition processDefinition;
+    private Map<String,Object> processDefinition;
+//    
+//    // 流程任务
+//    private Task task;
+//    
+//    // 运行中的流程实例
+//    private ProcessInstance processInstance;
+//    
+//    // 历史的流程实例
+//    private HistoricProcessInstance historicProcessInstance;
+//    
+//    // 历史任务
+//    private HistoricTaskInstance historicTaskInstance;
+//    
+//    // 流程定义
+//    private ProcessDefinition processDefinition;
 
     @Transient
 	public String getTitle() {
@@ -111,42 +127,42 @@ public class BaseVO implements Serializable{
 		this.businessType = businessType;
 	}
 
-	@Transient
-	public Task getTask() {
-		return task;
-	}
-
-	public void setTask(Task task) {
-		this.task = task;
-	}
-
-	@Transient
-	public ProcessInstance getProcessInstance() {
-		return processInstance;
-	}
-
-	public void setProcessInstance(ProcessInstance processInstance) {
-		this.processInstance = processInstance;
-	}
-
-	@Transient
-	public HistoricProcessInstance getHistoricProcessInstance() {
-		return historicProcessInstance;
-	}
-
-	public void setHistoricProcessInstance(
-			HistoricProcessInstance historicProcessInstance) {
-		this.historicProcessInstance = historicProcessInstance;
-	}
-
-	@Transient
-	public ProcessDefinition getProcessDefinition() {
-		return processDefinition;
-	}
-
-	public void setProcessDefinition(ProcessDefinition processDefinition) {
-		this.processDefinition = processDefinition;
-	}
+//	@Transient
+//	public Task getTask() {
+//		return task;
+//	}
+//
+//	public void setTask(Task task) {
+//		this.task = task;
+//	}
+//
+//	@Transient
+//	public ProcessInstance getProcessInstance() {
+//		return processInstance;
+//	}
+//
+//	public void setProcessInstance(ProcessInstance processInstance) {
+//		this.processInstance = processInstance;
+//	}
+//
+//	@Transient
+//	public HistoricProcessInstance getHistoricProcessInstance() {
+//		return historicProcessInstance;
+//	}
+//
+//	public void setHistoricProcessInstance(
+//			HistoricProcessInstance historicProcessInstance) {
+//		this.historicProcessInstance = historicProcessInstance;
+//	}
+//
+//	@Transient
+//	public ProcessDefinition getProcessDefinition() {
+//		return processDefinition;
+//	}
+//
+//	public void setProcessDefinition(ProcessDefinition processDefinition) {
+//		this.processDefinition = processDefinition;
+//	}
 
 	@Transient
 	public static long getSerialversionuid() {
@@ -176,15 +192,57 @@ public class BaseVO implements Serializable{
 	public void setBusinessKey(String businessKey) {
 		this.businessKey = businessKey;
 	}
-
 	@Transient
-	public HistoricTaskInstance getHistoricTaskInstance() {
+	public Map<String, Object> getTask() {
+		return task;
+	}
+
+	public void setTask(Map<String, Object> task) {
+		this.task = task;
+	}
+	@Transient
+	public Map<String, Object> getProcessInstance() {
+		return processInstance;
+	}
+
+	public void setProcessInstance(Map<String, Object> processInstance) {
+		this.processInstance = processInstance;
+	}
+	@Transient
+	public Map<String, Object> getHistoricProcessInstance() {
+		return historicProcessInstance;
+	}
+
+	public void setHistoricProcessInstance(Map<String, Object> historicProcessInstance) {
+		this.historicProcessInstance = historicProcessInstance;
+	}
+	@Transient
+	public Map<String, Object> getHistoricTaskInstance() {
 		return historicTaskInstance;
 	}
 
-	public void setHistoricTaskInstance(HistoricTaskInstance historicTaskInstance) {
+	public void setHistoricTaskInstance(Map<String, Object> historicTaskInstance) {
 		this.historicTaskInstance = historicTaskInstance;
 	}
+	@Transient
+	public Map<String, Object> getProcessDefinition() {
+		return processDefinition;
+	}
+
+	public void setProcessDefinition(Map<String, Object> processDefinition) {
+		this.processDefinition = processDefinition;
+	}
+
+//	@Transient
+//	public HistoricTaskInstance getHistoricTaskInstance() {
+//		return historicTaskInstance;
+//	}
+//
+//	public void setHistoricTaskInstance(HistoricTaskInstance historicTaskInstance) {
+//		this.historicTaskInstance = historicTaskInstance;
+//	}
+	
+	
 	
 	
 }

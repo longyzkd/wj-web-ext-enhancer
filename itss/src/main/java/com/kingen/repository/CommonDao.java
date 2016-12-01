@@ -33,8 +33,8 @@ import com.kingen.util.Reflections;
  * @param <T>  entity type
  * @date  2016-11-24
  */
-@Repository
-public class CommonDao<T>  {
+@Repository(value="commonDao")
+public   class CommonDao<T>  {
 
 	@Autowired
 	private SessionFactory sessionFactory;

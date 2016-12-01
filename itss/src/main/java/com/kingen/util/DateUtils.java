@@ -96,7 +96,7 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	}
 	
 	/**
-	 * 日期型字符串转化为日期 格式
+	 * 日期型字符串转化为日期 格式,从这些pattern里面一一寻找到匹配的
 	 * { "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", 
 	 *   "yyyy/MM/dd", "yyyy/MM/dd HH:mm:ss", "yyyy/MM/dd HH:mm",
 	 *   "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm" }

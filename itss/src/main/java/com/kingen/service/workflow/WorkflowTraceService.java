@@ -42,7 +42,7 @@ import com.kingen.util.workflow.WorkflowUtils;
  * @author zml
  */
 @Component
-public class WorkflowService {
+public class WorkflowTraceService {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired

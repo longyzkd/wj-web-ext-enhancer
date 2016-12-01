@@ -2,7 +2,6 @@ package com.kingen.web.workflow;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +16,8 @@ import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ModelQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
@@ -41,7 +41,7 @@ import com.kingen.web.CommonController;
 //@RequiresPermissions("admin:*")
 @RequestMapping("/workflow/model")
 public class ModelerController extends CommonController{
-	private static final Logger logger = Logger.getLogger(ModelerController.class);
+	private static final Logger logger = LoggerFactory.getLogger(ModelerController.class);
 	
 	public static final String STATUS="status";	
 	@Autowired
@@ -82,7 +82,7 @@ public class ModelerController extends CommonController{
 	 * 查找分页后的grid
 	 */
 	@RequestMapping(value="listData")
-	public void listData(Page<Log> page,Log vo,HttpServletResponse response) {
+	public void listData(Page page,Log vo,HttpServletResponse response) {
 		
 		  ModelQuery modelQuery = repositoryService.createModelQuery();
 	       // int[] pageParams = PaginationThreadUtils.setPage(modelQuery.list().size());
