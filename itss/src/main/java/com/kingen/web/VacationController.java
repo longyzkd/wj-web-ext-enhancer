@@ -45,10 +45,9 @@ import com.kingen.web.workflow.PaginationThreadUtils;
 
 
 /**
- * @ClassName: VacationAction
- * @Description:请假控制类,没有用动态任务分配
- * @author: zml
- * @date: 2014-12-1 上午12:35:50
+ * 请假控制类,没有用动态任务分配
+ * 
+ * @date: 2016-12-2
  *
  */
 

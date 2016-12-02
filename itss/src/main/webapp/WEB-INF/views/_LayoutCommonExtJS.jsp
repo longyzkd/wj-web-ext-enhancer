@@ -120,7 +120,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            }
 	        }
 
-	        
+	        //转为友好格式的yyyy-MM-dd类型
 	        function simpleDate(num) { //Sat Mar 06 00:00:00 CST 2010
 	            num = num + "";
 	            var date = "";
