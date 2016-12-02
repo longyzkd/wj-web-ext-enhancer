@@ -188,8 +188,10 @@ public class ActivitiUtils {
 		m.put("description", p.getDescription());
 
 		m.put("assignee", p.getAssignee());
+		m.put("owner", p.getOwner());
 		m.put("createTime", p.getCreateTime());
 		m.put("formKey", p.getFormKey());
+		m.put("taskDefinitionKey", p.getTaskDefinitionKey());
 
 		return m;
 	}
@@ -237,8 +239,12 @@ public class ActivitiUtils {
 		m.put("description", p.getDescription());
 
 		m.put("assignee", p.getAssignee());
-		m.put("createTime", p.getCreateTime());
 		m.put("formKey", p.getFormKey());
+		m.put("createTime", p.getCreateTime());
+		m.put("startTime", p.getStartTime());
+		m.put("endTime", p.getEndTime());
+		m.put("claimTime", p.getClaimTime());
+		m.put("deleteReason", p.getDeleteReason());
 		
 		return m;
 	}

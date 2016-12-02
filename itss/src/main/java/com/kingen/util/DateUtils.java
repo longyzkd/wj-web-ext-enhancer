@@ -3,9 +3,13 @@
 package com.kingen.util;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 日期工具类, 继承org.apache.commons.lang.time.DateUtils类
@@ -13,6 +17,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
  * @version 2014-4-15
  */
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
+	
+	/**
+	 * 日志对象
+	 */
+	protected static  Logger logger = LoggerFactory.getLogger(DateUtils.class);
 	
 	private static String[] parsePatterns = {
 		"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM", 
@@ -108,6 +117,24 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 		try {
 			return parseDate(str.toString(), parsePatterns);
 		} catch (ParseException e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return null;
+		}
+	}
+	/**
+	 * 格式化日期
+	 * @param date
+	 * @param pattern
+	 * @return
+	 */
+	public static Date toDate(Date date,String pattern) {
+		if (date == null){
+			return null;
+		}
+		try {
+			return parseDate( formatDate(date, pattern) , pattern);
+		} catch (ParseException e) {
 			return null;
 		}
 	}
@@ -169,12 +196,52 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 		return (afterTime - beforeTime) / (1000 * 60 * 60 * 24);
 	}
 	
+	
+	 /**
+     * 将字符串按指定格式转换成Date
+     * @param str
+     * @param style
+     * @return
+     */
+    public static Date stringToDate(String str, String style){
+        Date date = null;
+        SimpleDateFormat sdf = new SimpleDateFormat(style,Locale.SIMPLIFIED_CHINESE);
+        try {
+            if(str==null||str.equals("")){
+                date=null;
+            }
+            else{
+                date = sdf.parse(str);
+            }
+             
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+    /**
+     * 将日期按指定格式转换成字符串
+     * @param date
+     * @param style
+     * @return
+     */
+    public static String dateToString(Date date, String style) {
+        SimpleDateFormat sdf = new SimpleDateFormat(style);
+        if (date != null) {
+            return sdf.format(date);
+        }
+        return null;
+    }
 	/**
 	 * @param args
 	 * @throws ParseException
 	 */
 	public static void main(String[] args) throws ParseException {
-//		System.out.println(formatDate(parseDate("2010/3/6")));
+		System.out.println(parseDate("2010/3/6"));
+		
+		System.out.println(stringToDate("2010/3/6","yyyy/MM/dd"));
+		
+		
 //		System.out.println(getDate("yyyy年MM月dd日 E"));
 //		long time = new Date().getTime()-parseDate("2012-11-19").getTime();
 //		System.out.println(time/(24*60*60*1000));

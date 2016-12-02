@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.kingen.bean.User;
+import com.kingen.util.DateUtils;
 import com.kingen.util.FastjsonFilter;
 
 
@@ -87,14 +87,9 @@ public abstract class CommonController {
 		binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
 			@Override
 			public void setAsText(String text) {
-				try {
 					
-					setValue(DateUtils.parseDate(StringUtils.trim(text),"MM-dd-yyyy","MM/dd/yyyy","yyyy-MM-dd","yyyy/MM/dd"));
+					setValue(DateUtils.parseDate(StringUtils.trim(text)));
 					logger.debug("日期---"+getValue());
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			}
 		});
 	}

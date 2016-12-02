@@ -121,6 +121,28 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	        }
 
 	        
+	        function simpleDate(num) { //Sat Mar 06 00:00:00 CST 2010
+	            num = num + "";
+	            var date = "";
+	            var month = new Array();
+	            month["Jan"] = 1; month["Feb"] = 2; month["Mar"] = 3; month["Apr"] = 4; month["May"] = 5; month["Jan"] = 6;
+	            month["Jul"] = 7; month["Aug"] = 8; month["Sep"] = 9; month["Oct"] = 10; month["Nov"] = 11; month["Dec"] = 12;
+	            var week = new Array();
+	            week["Mon"] = "一"; week["Tue"] = "二"; week["Wed"] = "三"; week["Thu"] = "四"; week["Fri"] = "五"; week["Sat"] = "六"; week["Sun"] = "日";
+	            str = num.split(" ");
+	            date = str[5] + "-";
+	            date = date + month[str[1]] + "-" + str[2];
+	            return date;
+	        }
+
+	        function businessTypeRenderer(value){
+		        
+				switch(value){
+					case 'vacation': return '请假申请'; 
+					default: return '';
+			
+				}
         
+			}
     </script>
     <script src="<%=path%>/static/jslib/ExtJs/vTypes.js" type="text/javascript"></script>

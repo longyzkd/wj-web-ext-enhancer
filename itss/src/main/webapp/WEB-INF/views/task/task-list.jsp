@@ -50,6 +50,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		                {name: 'task.createTime' ,mapping:'task.createTime'},
 		                {name: 'task.id' ,mapping:'task.id'},
 		                {name: 'task.assignee' ,mapping:'task.assignee'},
+		                {name: 'task.taskDefinitionKey' ,mapping:'task.taskDefinitionKey'},
+		                {name: 'task.owner' ,mapping:'task.owner'},
+		                {name: 'task.name' ,mapping:'task.name'},
 		                
 		                {name: 'processInstance'},
 		                {name: 'pi.suspended',mapping:'processInstance.suspended'},
@@ -59,7 +62,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 		                
 		                {name: 'title', type: 'string'},
-		                {name: 'businessType', type: 'string'}
+		                {name: 'businessType', type: 'string'},
+		                {name: 'user_name', type: 'string'},
+		                {name: 'user_id', type: 'string'}
 		            ]
 
 		        });
@@ -124,10 +129,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             viewConfig:{getRowClass:changeRowClass},
             columns: [
 					new Ext.grid.PageRowNumberer(),
-					{ header: '服务名称', dataIndex: 'processDefinition.name', align: 'center', flex:2},
+					{ header: '服务名称', dataIndex: 'businessType', align: 'center', flex:2,renderer:businessTypeRenderer},
 					{ header: '任务名称', dataIndex: 'title', align: 'center', flex:1 },
-                    { header: '处理事宜', dataIndex: 'name', align: 'center', flex:2},
-                    { header: '申请人', dataIndex: 'task.assignee', align: 'center', flex:2},
+                    { header: '处理事宜', dataIndex: 'task.name', align: 'center', flex:2},
+                    { header: '申请人', dataIndex: 'user_name', align: 'center', flex:2},
                     { header: '状态', dataIndex: 'pi.suspended', align: 'center', flex:2,renderer:function(value){return value ? "已挂起" : "正常" }},
                     { header: '创建时间', dataIndex: 'task.createTime', align: 'center', flex:1}
 				],
@@ -197,15 +202,20 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         function handle(){
         	var  taskId = checkBox(sm,'task.id');
         	var  businessType = checkBox(sm,'businessType');
+        	var  taskDefinitionKey = checkBox(sm,'task.taskDefinitionKey');
        		if(!taskId){
        			return ;
        		}
        		var title ;
         	var url
-        	if('vacation' == businessType )	{
-	        	 title = '请假批准';
-	        	 url = '<%=path%>/vacation/toApproval/'+taskId;   //在后台根据taskKey来判断做的事情
-            }else {}  //其他业务类型
+           	if(taskDefinitionKey=='modifyApply'){
+           		 title = '修改申请';
+             }else{
+               		title = '流程审批';
+
+              }
+	        	
+	        url = '<%=path%>/vacation/toApproval/'+taskId;   //在后台根据taskKey来判断做的事情
         	ShowWindow(store, title, url, 600, 380);
         
         }

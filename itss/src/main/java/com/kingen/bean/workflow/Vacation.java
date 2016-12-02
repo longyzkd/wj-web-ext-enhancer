@@ -15,6 +15,7 @@ import javax.persistence.TemporalType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kingen.util.DateUtils;
 
 /**
  * 休假对象
@@ -49,12 +50,14 @@ public class Vacation extends BaseVO implements Serializable{
 	// 请假开始日期
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "BEGIN_DATE")
 	private Date beginDate;
 	
 	// 请假结束日期
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "END_DATE")
 	private Date endDate;
 	
@@ -105,6 +108,7 @@ public class Vacation extends BaseVO implements Serializable{
 	}
 
 	public Date getBeginDate() {
+//		return DateUtils.toDate(beginDate, "yyyy-MM-dd");
 		return beginDate;
 	}
 
@@ -113,6 +117,7 @@ public class Vacation extends BaseVO implements Serializable{
 	}
 
 	public Date getEndDate() {
+//		return DateUtils.toDate(endDate, "yyyy-MM-dd");
 		return endDate;
 	}
 

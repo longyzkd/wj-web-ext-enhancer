@@ -158,12 +158,13 @@ public class ProcessService {
      * @throws Exception
      */
 	
-	public List<BaseVO> findFinishedTaskInstances(User user, Model model) throws Exception {
+	public Page<BaseVO> findFinishedTaskInstances(User user, Page<BaseVO> page) throws Exception {
 		HistoricTaskInstanceQuery historQuery = historyService.createHistoricTaskInstanceQuery().taskAssignee(user.getUserId().toString()).finished();
 		Integer totalSum = historQuery.list().size();
-        int[] pageParams = PaginationThreadUtils.setPage(totalSum);
-    	Pagination pagination = PaginationThreadUtils.get();
-    	List<HistoricTaskInstance> list = historQuery.orderByHistoricTaskInstanceEndTime().desc().listPage(pageParams[0], pageParams[1]);
+//        int[] pageParams = PaginationThreadUtils.setPage(totalSum);
+//		Pagination pagination = PaginationThreadUtils.get();
+		page.setTotal(totalSum);
+    	List<HistoricTaskInstance> list = historQuery.orderByHistoricTaskInstanceEndTime().desc().listPage(page.getFirstResult(),page.getLimit());
     	List<BaseVO> taskList = new ArrayList<BaseVO>();
     	
     	for(HistoricTaskInstance historicTaskInstance : list){
@@ -182,8 +183,9 @@ public class ProcessService {
 				}
 			}
     	}
-    	model.addAttribute("page", pagination.getPageStr());
-		return taskList;
+//    	model.addAttribute("page", pagination.getPageStr());
+    	page.setDataList(taskList);
+		return page;
 	}
     
     /**

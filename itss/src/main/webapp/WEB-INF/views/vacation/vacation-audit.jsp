@@ -24,13 +24,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	    	        id:"fromDateField",
 	                anchor: '100%',
 	                fieldLabel: '开始时间',
-	                value:'${vacation.beginDate}'
+	                value: simpleDate('${vacation.beginDate}')
 	                
 	            });
 	        var toDateField =   Ext.widget('displayfield',{ 
 	                anchor: '100%',
 	                fieldLabel: '结束时间',
-	                value: '${vacation.endDate}' // defaults to today
+	                value: simpleDate('${vacation.endDate}') // defaults to today
 	            });
 
             var txtDays =  Ext.widget('displayfield',{
@@ -45,18 +45,18 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            labelAlign: 'right',
 	            value:'${vacation.vacationType}'
 	        });
-            var txtReason =  Ext.widget('textarea', {
+            var txtReason =  Ext.widget('displayfield', {
 	            fieldLabel: '原因',
 	            labelAlign: 'right',
 	            value:'${vacation.reason }'
 	        });
           
-             
-	            var txtMyComment =  Ext.widget('textarea', {
-	                name:'content',	
-		            fieldLabel: '我的意见',
-		            labelAlign: 'right'
-		        });
+            
+            var txtMyComment =  Ext.widget('textarea', {
+                name:'content',	
+	            fieldLabel: '我的意见',
+	            labelAlign: 'right'
+	        });
           
            
             var formRight = new Ext.form.Panel({
@@ -79,7 +79,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     } ,{
                         xtype: 'fieldcontainer',
                         layout: { type: 'hbox', align: 'middle' },
-                        items: [txtReason,txtMyComment]
+                        items: [txtReason]
+                    } ,{
+                        xtype: 'fieldcontainer',
+                        layout: { type: 'hbox', align: 'middle' },
+                        items: [txtMyComment]
                     } 
 
                     ],

@@ -104,10 +104,18 @@ public class ProcessController extends CommonController{
 		User user = this.userService.unique(userId);
 		page = this.processService.findTodoTask(user, page);
 //		model.addAttribute("tasklist", taskList);
-		model.addAttribute("taskType", BaseVO.CANDIDATE);
+//		model.addAttribute("taskType", BaseVO.CANDIDATE);
 		
 		 writeJson(response,page);
 	}
+	
+	
+	@RequestMapping(value = "/finishedTask")
+	public String finishedTask(HttpSession session, Model model) throws Exception{
+		
+		return "task/task-end";
+	}
+	
 	
     /**
      * 查看已完成任务列表
@@ -115,14 +123,15 @@ public class ProcessController extends CommonController{
      * @return
      * @throws Exception 
      */
-    @RequiresPermissions("user:process:finished")
-    @RequestMapping(value = "/finishedTask_page")
-    public String findFinishedTaskInstances(HttpSession session, Model model) throws Exception {
+//    @RequiresPermissions("user:process:finished")
+    @RequestMapping(value = "/finishedTask/data")
+    public void finishedTaskData(Page<BaseVO> page,HttpSession session, Model model, HttpServletResponse response) throws Exception {
     	User user = getCurrentUser();
-    	List<BaseVO> tasklist = this.processService.findFinishedTaskInstances(user, model);
-    	model.addAttribute("tasklist", tasklist);
-    	model.addAttribute("taskType", BaseVO.FINISHED);
-    	return "task/end_task";
+    	 page = this.processService.findFinishedTaskInstances(user, page);
+//    	model.addAttribute("tasklist", tasklist);
+//    	model.addAttribute("taskType", BaseVO.FINISHED);
+//    	return "task/end_task";
+    	 writeJson(response,page);
     }
 
 	

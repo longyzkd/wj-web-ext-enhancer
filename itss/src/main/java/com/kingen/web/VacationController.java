@@ -270,9 +270,9 @@ public class VacationController extends CommonController{
      * @return
      * @throws Exception 
      */
-	@RequiresPermissions("user:vacation:modify")
+//	@RequiresPermissions("user:vacation:modify")
 	@RequestMapping(value = "/modifyVacation/{taskId}", method = RequestMethod.POST)
-	public String modifyVacation(
+	public @ResponseBody JSONObject modifyVacation(
 			@ModelAttribute("vacation") Vacation vacation,
 			BindingResult results,
 			@PathVariable("taskId") String taskId,
@@ -282,14 +282,13 @@ public class VacationController extends CommonController{
 			HttpSession session,
 			Model model
 			) throws Exception {
-		
-		if(results.hasErrors()){
-        	model.addAttribute("vacation", vacation);
-        	return "vacation/modify_vacation";
-        }
+//		
+//		if(results.hasErrors()){
+//        	model.addAttribute("vacation", vacation);
+//        	return "vacation/modify_vacation";
+//        }
 		
 		User user = getCurrentUser();
-        
 
         Map<String, Object> variables = new HashMap<String, Object>();
         vacation.setUserId(user.getUserId());
@@ -298,27 +297,27 @@ public class VacationController extends CommonController{
         vacation.setApplyDate(new Date());
         vacation.setBusinessKey(vacation.getId().toString());
         vacation.setProcessInstanceId(processInstanceId);
+        
+        JSONObject jsonObject= new JSONObject();
         if(reApply){
         	//修改请假申请
 	        vacation.setTitle(user.getUsername()+" 的请假申请！");
 	        vacation.setStatus(BaseVO.PENDING);
 	        //由userTask自动分配审批权限
-//	        if(vacation.getDays() <= 3){
-//            	variables.put("auditGroup", "manager");
-//            }else{
-//            	variables.put("auditGroup", "director");
-//            }
-	        redirectAttributes.addFlashAttribute("message", "任务办理完成，请假申请已重新提交！");
+//	        redirectAttributes.addFlashAttribute("message", "任务办理完成，请假申请已重新提交！");
+	        jsonObject = JsonResultBuilder.success(true).msg("任务办理完成，请假申请已重新提交！").json();
         }else{
         	vacation.setTitle(user.getUsername()+" 的请假申请已取消！");
         	vacation.setStatus(BaseVO.APPROVAL_FAILED);
-        	redirectAttributes.addFlashAttribute("message", "任务办理完成，已经取消您的请假申请！");
+//        	redirectAttributes.addFlashAttribute("message", "任务办理完成，已经取消您的请假申请！");
+        	jsonObject = JsonResultBuilder.success(true).msg("任务办理完成，已经取消您的请假申请！").json();
         }
         this.vacationService.doUpdate(vacation);
         variables.put("entity", vacation);
         variables.put("reApply", reApply);
 		this.processService.complete(taskId, null, user.getUserId().toString(), variables);
 		
-    	return "redirect:/processAction/todoTaskList_page";
+//    	return "redirect:/processAction/todoTaskList_page";
+		return jsonObject;
     }
 }

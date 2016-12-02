@@ -28,25 +28,25 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	                anchor: '100%',
 	                fieldLabel: '开始时间',
 	                name: 'beginDate',
-	             //   value: new Date() , // defaults to today
+	                value: simpleDate('${vacation.beginDate}') , // defaults to today
 	                maxValue: new Date(),  // limited to the current date or prior
 	                listeners:{
 							change:function(_this, newValue, oldValue, eOpts){
 									toDateField.setMinValue( newValue );
 								}
 
-		                },
-		                value:'${vacation.beginDate}'
+		                }
 		               
 	            });
+
+	       // alert('${vacation.beginDate}');
 	        var toDateField =   Ext.widget('datefield',{ 
 	                anchor: '100%',
 	                fieldLabel: '结束时间',
 	                format :'Y-m-d ',
 	                name: 'endDate',
-	                value:  '${vacation.endDate}'   // defaults to today
+	                value:simpleDate('${vacation.endDate}')
 	            });
-
             var txtDays =  Ext.widget('textfield',{
 
                 name : 'days',
@@ -87,11 +87,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            value:'${vacation.reason }'
 	        });
           
-            var txtComment =  Ext.widget('textarea', {
+            var txtComment =  Ext.widget('displayfield', {
                 name:'content',	
-	            fieldLabel: '我的意见',
+	            fieldLabel: '意见',
 	            labelAlign: 'right',
-	            value:'${vacation.comment }'
+	            value:'${commentList.get(0).getContent() }'
 	        });
              
            
@@ -151,9 +151,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 
             function complete(flag) {
-            	 var action_url= '${ctx }/vacation/modifyVacation/${vacation.task.id }';
+            	 var action_url= basepath+'/vacation/modifyVacation/${vacation.task.id }';
                     
-                    var form = this.up('form').getForm();
+                    var form = formRight.getForm();
                     if (form.isValid()) {
                         form.submit({
                             submitEmptyText: false,

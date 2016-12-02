@@ -1,108 +1,158 @@
-﻿<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
-<%@ include file="/WEB-INF/taglibs/taglibs.jsp"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta http-equiv="pragma" content="no-cache" />
-<meta http-equiv="cache-control" content="no-cache" />
-<meta http-equiv="expires" content="0" />    
-<title>结束任务列表</title>
-<link href="${ctx }/css/common/jquery.qtip.min.css" type="text/css" rel="stylesheet" />
-<script src="${ctx }/js/workflow.js" type="text/javascript"></script>
-<script src="${ctx }/js/common/jquery.outerhtml.js" type="text/javascript"></script>
-<script src="${ctx }/js/common/jquery.qtip.min.js" type="text/javascript"></script>
-<script type="text/javascript">
-	var ctx = "${ctx}";
-	$(function() {
-		var taskType = "${taskType}";
-		$("#" + taskType).attr("class", "selected");
-		if(taskType == "candidate"){
-			$("#taskForm").attr("action","${ctx}/processAction/todoTaskList_page");
-		}else if(taskType == "finished"){
-			$("#taskForm").attr("action","${ctx}/processAction/finishedTask_page");
-		}
-	});
-	$(function() {
-		var message = "${message}";
-		if(message != ""){
-			$( "#dialog-message" ).dialog({
-			      modal: true,
-			      buttons: {
-			        Ok: function() {
-			          $( this ).dialog( "close" );
-			        }
-			      }
-		    });
-		}
-	});
-	
-</script>
-</head>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
 
-<body>
-	<div id="main">
-		<div id="dialog-message" title="complete">
-		  <p>
-		    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 5px 0;"></span>
-		    ${message}
-		  </p>
-		</div>
-      <div class="sort_switch">
-          <ul id="TabsNav">
-	          <li class="" id="candidate"><a href="${ctx}/processAction/todoTaskList_page">待办的任务</a></li>
-          	  <li class="" id="finished"><a href="${ctx}/processAction/finishedTask_page">已完成的任务</a></li>
-          </ul>
-      </div>
-      
-      <div class="sort_content">
-      	<form id="taskForm" method="post">
-          <table class="tableHue1" width="100%" border="1" bordercolor="#a4d5e3" cellspacing="0" cellpadding="0">
-              <thead>
-	  			<tr>
-					<th>单据类型</th>
-					<th>申请人</th>
-					<th>标题</th>
-					<th>任务开始时间</th>
-					<th>任务签收时间</th>
-					<th>任务结束时间</th>
-					<th>任务结束原因</th>
-					<th>流程版本</th>
-					<th>操作</th>
-				</tr>
-              </thead>
-              <tbody id="">
-              	<c:forEach items="${tasklist }" var="base">
-				<c:set var="hti" value="${base.historicTaskInstance }" />
-				<c:set var="pd" value="${base.processDefinition }" />
-                <tr>
-                  <td>
-                  	<c:choose>
-                  		<c:when test="${base.businessType == 'vacation'}">请假申请</c:when>
-                  		<c:when test="${base.businessType == 'salary'}">薪资调整</c:when>
-                  		<c:when test="${base.businessType == 'expense'}">报销申请</c:when>
-                  	</c:choose>
-                  </td>
-                  <td>${base.user_name}</td>
-                  <td>${base.title}</td>
-                  <td><fmt:formatDate value="${hti.startTime }" type="both" /></td>
-                  <td><fmt:formatDate value="${hti.claimTime }" type="both" /></td>
-				  <td><fmt:formatDate value="${hti.endTime }" type="both" /></td>
-				  <td>${hti.deleteReason }</td>
-				  <td><b title='流程版本号'>V: ${pd.version }</b></td>
-                  <td> 
-                  
-                  </td>
-                </tr>
-                </c:forEach>
-                <tr>
-              		<td class="fun_area" colspan="9" align="center">${page }</td>
-              	</tr>
-              </tbody>
-          </table>
-          </form>
-      </div>
-	</div>
-</body>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+  	<jsp:include page="../_LayoutCommonExtJS.jsp"/>
+  	<style type="text/css">
+  		tr.x-grid-record-red .x-grid-td {
+			   background: #E6D1E3;
+			}
+			tr.x-grid-record-yellow .x-grid-td{
+			   background: #F3FEC2;
+			}
+		tr.x-grid-record-green .x-grid-td{
+		   background: #92FCCC;
+		}
+  	</style>
+	<script type="text/javascript">
+		Ext.onReady(function(){
+			
+			Ext.QuickTips.init();
 
+			 Ext.define('App.model.Task', {
+		            extend: 'Ext.data.Model',
+		            fields: [
+		                {name: 'id'},
+		                {name: 'processInstanceId'},
+		                {name: 'processDefinitionId', type: 'string'},
+		                {name: 'name'},
+		                {name: 'description'},
+		                {name: 'assignee', type: 'string'},
+		                {name: 'createTime'},
+		                {name: 'formKey'}
+		            ]
+
+		        });
+
+		        
+			   Ext.define('App.model.Model', {
+		            extend: 'Ext.data.Model',
+// 		            requires: [
+// 		                'App.model.Task'
+// 		            ],
+		            fields: [
+		              
+		                
+		            	 {name: 'historicProcessInstance'},
+			             {name: 'historicProcessInstance.startTime',mapping:'historicProcessInstance.startTime'},
+			             {name: 'historicProcessInstance.claimTime',mapping:'historicProcessInstance.claimTime'},
+			             {name: 'historicProcessInstance.endTime',mapping:'historicProcessInstance.endTime'},
+			             {name: 'historicProcessInstance.deleteReason',mapping:'historicProcessInstance.deleteReason'},
+		                
+		                {name: 'processDefinition'},
+		                {name: 'pd.version',mapping:'processDefinition.version'},
+
+		                
+		                {name: 'title', type: 'string'},
+		                {name: 'businessType', type: 'string'},
+		                {name: 'user_name', type: 'string'},
+		                {name: 'user_id', type: 'string'}
+		            ]
+
+		        });
+	       
+	       
+        
+       
+        var store = Ext.create('Ext.data.Store', {//pageSize 默认25
+            autoLoad: true,
+            model: 'App.model.Model',
+            proxy: {
+                type: 'ajax',
+                url: '<%=basePath%>workflow/finishedTask/data',
+                reader: { type: 'json', root: 'dataList' }
+            },
+            listeners: {
+                beforeload: function (store, options) {
+            		
+                }
+            }
+        });
+
+        
+
+
+
+        var btnRecover = new Ext.button.Button({
+            text: '恢复',
+            iconCls: 'x-button-read',
+            handler: function () {
+            	
+            }
+        });
+        var tbar = Ext.create('Ext.toolbar.Toolbar', {
+            items: [btnRecover]
+        });
+        
+        var sm = Ext.create('Ext.selection.CheckboxModel', { mode: 'MULTI' });
+        var grid = Ext.create('Ext.grid.Panel', {
+            region: 'center',
+            store: store,
+            //dockedItems: [tbar],
+            selModel: sm,
+            columnLines: false,
+            viewConfig:{getRowClass:changeRowClass},
+            columns: [
+					new Ext.grid.PageRowNumberer(),
+					{ header: '服务名称', dataIndex: 'businessType', align: 'center', flex:2,renderer:businessTypeRenderer},
+					{ header: '任务名称', dataIndex: 'title', align: 'center', flex:1 },
+                    { header: '申请人', dataIndex: 'user_name', align: 'center', flex:2},
+                    { header: '任务开始时间', dataIndex: 'historicProcessInstance.startTime', align: 'center', flex:2},
+                    { header: '任务结束时间', dataIndex: 'historicProcessInstance.endTime', align: 'center', flex:1}
+				],
+				bbar: createPage(store)
+        });
+        
+        
+        
+        //整个页面的容器
+        Ext.create('Ext.container.Viewport', {
+            layout: 'fit',
+            border: false,
+            items: grid
+        });
+        
+        
+	       
+	    
+	    store.on('load', function(){
+	    	sm.deselect(sm.getSelection());
+	    });
+	    
+//函数区        
+//----------------------------------------------------------------------------------------------------------
+        
+	    function changeRowClass(record, rowIndex, rowParams, store){
+	        if (record.get("type") == "2") {        
+	            return 'x-grid-record-red';
+	        }
+	    } 
+
+	    
+
+		
+        
+        
+//-----------------------------------------------------------------------------------------------------------
+		});
+	</script>
+  </head>
+  
+  <body>
+  </body>
 </html>
