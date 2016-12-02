@@ -1,6 +1,5 @@
 package com.kingen.service.workflow;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +9,6 @@ import org.activiti.engine.IdentityService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.delegate.BpmnError;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.javax.el.ExpressionFactory;
@@ -39,7 +37,7 @@ import com.kingen.util.workflow.WorkflowUtils;
  * 工作流跟踪相关Service
  * @Component注解(把普通pojo实例化到spring容器中，相当于配置文件中的<bean id="" class=""/>)
  * 目的是让Spring容器管理workflowService，这样@Autowired 才能自动注入
- * @author zml
+ * @author 
  */
 @Component
 public class WorkflowTraceService {
