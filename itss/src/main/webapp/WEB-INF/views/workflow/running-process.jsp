@@ -3,12 +3,16 @@
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 %>
+<%@ include file="/WEB-INF/views/taglibsForActiviti.jsp"%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
   	<title>服务台-运行中的流程</title>
   	<jsp:include page="../_LayoutCommonExtJS.jsp"/>
+  	
+  	
+  	
   	<style type="text/css">
   		tr.x-grid-record-red .x-grid-td {
 			   background: #E6D1E3;
@@ -21,6 +25,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		}
   	</style>
 	<script type="text/javascript">
+
+	var ctx = "${ctx}";
 		Ext.onReady(function(){
 			
 			Ext.QuickTips.init();
@@ -164,7 +170,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            text: '跟踪',
 	            iconCls: 'x-button-read',
 	            handler: function () {
-	            	
+		            var pid =  checkBox(sm,'processInstanceId');
+			        var pdid =   checkBox(sm,'processDefinitionId');
+	            	graphTrace({pid:pid,pdid:pdid});
 	            }
 	        });
 	        var tbar = Ext.create('Ext.toolbar.Toolbar', {
@@ -181,7 +189,15 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 {name: 'suspended', type: 'string'},
                 {name: 'name', type: 'string'},
                 {name: 'description', type: 'string'},
-                {name: 'createTime'}
+                {name: 'applyDateStr'},
+                
+                {name: 'clientUint'},
+                {name: 'contract'},
+                {name: 'priority'},
+                {name: 'title'},
+                {name: 'businessType'},
+                {name: 'businessName'},
+                {name: 'activityName'}
             ]
 
         });
@@ -217,13 +233,14 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             viewConfig:{getRowClass:changeRowClass},
             columns: [
 					new Ext.grid.PageRowNumberer(),
-					{ header: '优先级', dataIndex: 'name', align: 'center', flex:2},
-					{ header: '客户单位', dataIndex: 'name', align: 'center', flex:1 },
-                    { header: '合同', dataIndex: 'name', align: 'center', flex:2},
-                    { header: '标题', dataIndex: 'name', align: 'center', flex:1},
-                    { header: '服务项', dataIndex: 'name', align: 'center', flex:2},
+					{ header: '优先级', dataIndex: 'priority', align: 'center', flex:2},
+					{ header: '客户单位', dataIndex: 'clientUint', align: 'center', flex:1 },
+                    { header: '合同', dataIndex: 'contract', align: 'center', flex:2},
+                    { header: '标题', dataIndex: 'title', align: 'center', flex:1},
+                    { header: '服务项', dataIndex: 'businessType', align: 'center', flex:2},
                     { header: '流程实例ID', dataIndex: 'processInstanceId', align: 'center', flex:2},
-                    { header: '创建时间', dataIndex: 'name', align: 'center', flex:2}
+                    { header: '当前节点', dataIndex: 'activityName', align: 'center', flex:2},
+                    { header: '创建时间', dataIndex: 'applyDateStr', align: 'center', flex:2}
 				],
 				bbar: createPage(store)
         });

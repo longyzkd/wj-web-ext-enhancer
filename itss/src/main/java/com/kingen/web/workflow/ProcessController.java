@@ -159,6 +159,7 @@ public class ProcessController extends CommonController{
      * @param response
      * @throws Exception 
      */
+	//暂时没用
     @RequestMapping(value = "/process/showDiagram/{processInstanceId}", method = RequestMethod.GET)
 	public void showDiagram(@PathVariable("processInstanceId") String processInstanceId, HttpServletResponse response) throws Exception {
 	        InputStream imageStream = this.processService.getDiagram(processInstanceId);
@@ -171,7 +172,7 @@ public class ProcessController extends CommonController{
 	}
     
     /**
-     * 显示图片通过部署id，不带流程跟踪(没有乱码问题)
+     * 显示图片，通过部署id，不带流程跟踪(没有乱码问题)
      * @param processDefinitionId
      * @param resourceType	资源类型(xml|image)
      * @param response
@@ -190,13 +191,14 @@ public class ProcessController extends CommonController{
     
     
     /**
-     * 显示图片通过流程id，不带流程跟踪(没有乱码问题)
+     * 显示图片，通过流程id，不带流程跟踪(没有乱码问题)
      *
      * @param resourceType      资源类型(xml|image)
      * @param processInstanceId 流程实例ID
      * @param response
      * @throws Exception
      */
+    
     @RequestMapping(value = "/process/process-instance")
     public void loadByProcessInstance(@RequestParam("type") String resourceType, @RequestParam("pid") String processInstanceId, HttpServletResponse response)
             throws Exception {
@@ -216,7 +218,7 @@ public class ProcessController extends CommonController{
      * @return
      * @throws Exception
      */
-    @RequiresPermissions("user:process:trace")
+//    @RequiresPermissions("user:process:trace")
     @RequestMapping(value = "/process/trace/{pid}")
     @ResponseBody
     public List<Map<String, Object>> traceProcess(@PathVariable("pid") String processInstanceId) throws Exception {
@@ -256,7 +258,7 @@ public class ProcessController extends CommonController{
     	return "apply/list_running";
     }
     /**
-     * 管理运行中的流程
+     * （服务台）管理运行中的流程
      * @param model
      * @return
      * @throws Exception

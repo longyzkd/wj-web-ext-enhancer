@@ -36,8 +36,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 
+import com.google.common.collect.Lists;
 import com.kingen.bean.User;
+import com.kingen.bean.workflow.ActivitiAware;
 import com.kingen.bean.workflow.BaseVO;
 import com.kingen.bean.workflow.CommentVO;
 import com.kingen.bean.workflow.Vacation;
@@ -448,11 +451,19 @@ public class ProcessService {
 //		Pagination pagination = PaginationThreadUtils.get();
 		
 		List<ProcessInstance> list = processInstanceQuery.orderByProcessInstanceId().desc().listPage(page.getFirstResult(), page.getLimit());
-		
-		
+		List<Map> result = Lists.newArrayList();
+		if(!CollectionUtils.isEmpty(list)){
+			for(ProcessInstance pi : list){
+				//String businessKey = pi.getBusinessKey();
+				 
+				
+				ActivitiAware a = (ActivitiAware) this.runtimeService.getVariable(pi.getId(), "entity");
+				result.add(ActivitiUtils.mapSetterProcessInstanceWithEntity(pi,a));
+			}
+		}
 		
 		page.setTotal(totalSum);
-		page.setDataList(ActivitiUtils.mapSetterProcessInstance(list));
+		page.setDataList(result);
 //		model.addAttribute("page", pagination.getPageStr());
 		
 		return page;

@@ -141,6 +141,7 @@ public class VacationController extends CommonController{
 			Model model) throws Exception{
 		User user = getCurrentUser();
         
+		/*     业务数据    */
         vacation.setUserId(user.getUserId());
         vacation.setUser_name(user.getUsername());
         vacation.setTitle(user.getUsername()+" 的请假申请");

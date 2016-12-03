@@ -24,7 +24,7 @@ import com.kingen.util.DateUtils;
  */
 @Entity
 @Table(name = "T_VACATION")
-public class Vacation extends BaseVO implements Serializable{	
+public class Vacation extends BaseVO implements Serializable,ActivitiAware{	
 	/**
 	 * 
 	 */
@@ -175,6 +175,38 @@ public class Vacation extends BaseVO implements Serializable{
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	@Override
+	public String getPriority() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getClientUint() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getContract() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * 服务项名称 由页面填写
+	 */
+	@Override
+	public String getBusinessName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getApplyDateStr() {
+		return DateUtils.formatDateTime(this.applyDate);
 	}
 
 }

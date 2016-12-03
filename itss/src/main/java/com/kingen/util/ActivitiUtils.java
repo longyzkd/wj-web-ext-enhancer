@@ -8,9 +8,13 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kingen.bean.workflow.ActivitiAware;
+import com.kingen.util.workflow.ProcessDefinitionCache;
 
 /**
  * 将activiti用到的一些bean转为 MAP，防止 序列化activiti bean时候
@@ -63,6 +67,8 @@ public class ActivitiUtils {
 			m.put("activityId", p.getActivityId());
 			m.put("name", p.getName());
 			m.put("description", p.getDescription());
+			
+			
 			result.add(m);
 		}
 		return result;
@@ -247,6 +253,39 @@ public class ActivitiUtils {
 		m.put("deleteReason", p.getDeleteReason());
 		
 		return m;
+	}
+
+	public static Map mapSetterProcessInstanceWithEntity(ProcessInstance pi, ActivitiAware a) {
+
+		if (pi == null)
+			return null;
+
+		Map<String, Object> m = Maps.newHashMap();
+		m.put("id", pi.getId());
+		m.put("processInstanceId", pi.getProcessInstanceId());
+		m.put("processDefinitionId", pi.getProcessDefinitionId());
+		m.put("activityId", pi.getActivityId());
+		m.put("name", pi.getName());
+		m.put("description", pi.getDescription());
+		m.put("suspended", pi.isSuspended());
+		
+		
+		m.put("clientUint", a.getClientUint());
+		m.put("contract", a.getContract());
+		m.put("priority", a.getPriority());
+		m.put("title", a.getTitle());
+		m.put("businessType", a.getBusinessType());
+		m.put("businessName", a.getBusinessType());
+		m.put("applyDateStr", a.getApplyDateStr());
+		
+		//当前节点
+		ProcessDefinitionCache.setRepositoryService(SpringContextHolder.getBean(org.activiti.engine.RepositoryService.class));
+		String activityName = ProcessDefinitionCache.getActivityName(pi.getProcessDefinitionId(), ObjectUtils.toString(pi.getActivityId()));
+		m.put("activityName", activityName);
+		
+		return m;
+	
+		
 	}
 
 }

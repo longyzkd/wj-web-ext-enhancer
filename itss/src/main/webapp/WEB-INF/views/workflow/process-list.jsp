@@ -7,6 +7,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
+  	<title>流程定义</title>
   	<jsp:include page="../_LayoutCommonExtJS.jsp"/>
   	<style type="text/css">
   		tr.x-grid-record-red .x-grid-td {
