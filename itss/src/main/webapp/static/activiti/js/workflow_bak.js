@@ -1,18 +1,62 @@
+
+
 function graphTrace(options) {
+
     var _defaults = {
         srcEle: this
     };
     var opts = $.extend(true, _defaults, options);
-   
-    
-    
-  
-    
+
+    // 处理使用js跟踪当前节点坐标错乱问题
+    $('#changeImg').on('click', function() {
+        $('#workflowTraceDialog').dialog('close');
+        if ($('#imgDialog').length > 0) {
+            $('#imgDialog').remove();
+        }
+        $('<div/>', {
+            'id': 'imgDialog',
+            title: '此对话框显示的图片是由引擎自动生成的，并用红色标记当前的节点<button id="diagram-viewer">Diagram-Viewer</button>',
+            html: "<img src='" + ctx + '/workflow/process/trace/auto/' + opts.pid + "' />"
+        }).appendTo('body').dialog({
+            modal: true,
+            resizable: false,
+            dragable: false,
+            width: document.documentElement.clientWidth * 0.95,
+            height: document.documentElement.clientHeight * 0.95
+        });
+    });
+
+	/*
+	用官方开发的Diagram-Viewer跟踪
+	 */
+	$('#diagram-viewer').on('click', function() {
+		$('#workflowTraceDialog').dialog('close');
+
+		if ($('#imgDialog').length > 0) {
+			$('#imgDialog').remove();
+		}
+
+		var url = ctx + '/diagram-viewer/index.html?processDefinitionId=' + opts.pdid + '&processInstanceId=' + opts.pid;
+
+		$('<div/>', {
+			'id': 'imgDialog',
+			title: '此对话框显示的图片是由引擎自动生成的，并用红色标记当前的节点',
+			html: '<iframe src="' + url + '" width="100%" height="' + document.documentElement.clientHeight * 0.90 + '" />'
+		}).appendTo('body').dialog({
+			modal: true,
+			resizable: false,
+			dragable: false,
+			width: document.documentElement.clientWidth * 0.95,
+			height: document.documentElement.clientHeight * 0.95
+		});
+	});
+
     // 获取图片资源
 	  var imageUrl = ctx + "/workflow/resource/process-instance?pid=" + opts.pid + "&type=png";
 	    $.getJSON(ctx + '/workflow/process/trace/' + opts.pid, function(infos) {
 
         var positionHtml = "";
+
         // 生成图片
         var varsArray = new Array();
         $.each(infos, function(i, v) {
@@ -53,8 +97,8 @@ function graphTrace(options) {
         if ($('#workflowTraceDialog').length == 0) {
             $('<div/>', {
                 id: 'workflowTraceDialog',
-                title: '查看流程（按ESC键可以关闭）',
-                html: " <div><img src='" + imageUrl + "' style='position:absolute; left:0px; top:0px;' />" +
+                title: '查看流程（按ESC键可以关闭）<button id="changeImg">如果坐标错乱请点击这里</button><button id="diagram-viewer">Diagram-Viewer</button>',
+                html: "<div><img src='" + imageUrl + "' style='position:absolute; left:0px; top:0px;' />" +
                 "<div id='processImageBorder'>" +
                 positionHtml +
                 "</div>" +
@@ -76,7 +120,7 @@ function graphTrace(options) {
             resizable: false,
             dragable: false,
             open: function() {
-                $('#workflowTraceDialog').dialog('option', 'title', '查看流程（按ESC键可以关闭）');
+                $('#workflowTraceDialog').dialog('option', 'title', '查看流程（按ESC键可以关闭）<button id="changeImg">如果坐标错乱请点击这里</button><button id="diagram-viewer">Diagram-Viewer</button>');
                 $('#workflowTraceDialog').css('padding', '0.2em');
                 $('#workflowTraceDialog .ui-accordion-content').css('padding', '0.2em').height($('#workflowTraceDialog').height() - 75);
 
@@ -84,10 +128,10 @@ function graphTrace(options) {
                 $('.activity-attr').qtip({
                     content: function() {
                         var vars = $(this).data('vars');
-                        var tipContent = "<table class='tableHue2'>";
+                        var tipContent = "<table class='need-border'>";
                         $.each(vars, function(varKey, varValue) {
                             if (varValue) {
-                                tipContent += "<tr><td class='title1'>" + varKey + "</td><td class='left'>" + varValue + "<td/></tr>";
+                                tipContent += "<tr><td class='label'>" + varKey + "</td><td>" + varValue + "<td/></tr>";
                             }
                         });
                         tipContent += "</table>";
@@ -110,34 +154,4 @@ function graphTrace(options) {
         });
 
     });
-}
-
-function graphTraceDiagram(options){
-	 var _defaults = {
-	        srcEle: this
-	    };
-    var opts = $.extend(true, _defaults, options);
-	
-	  /*
-	用官方开发的Diagram-Viewer跟踪
-	 */
-		$('#workflowTraceDialog').dialog('close');
-
-		if ($('#imgDialog').length > 0) {
-			$('#imgDialog').remove();
-		}
-
-		var url = ctx + '/diagram-viewer/index.html?processDefinitionId=' + opts.pdid + '&processInstanceId=' + opts.pid;
-
-		$('<div/>', {
-			'id': 'imgDialog',
-			title: '此对话框显示的图片是由引擎自动生成的，并用红色标记当前的节点',
-			html: '<iframe src="' + url + '" width="100%" height="' + document.documentElement.clientHeight * 0.90 + '" />'
-		}).appendTo('body').dialog({
-			modal: true,
-			resizable: false,
-			dragable: false,
-			width: document.documentElement.clientWidth * 0.95,
-			height: document.documentElement.clientHeight * 0.95
-		});
 }

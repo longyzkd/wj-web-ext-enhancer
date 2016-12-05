@@ -7,7 +7,7 @@
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="cache-control" content="no-cache" />
 <meta http-equiv="expires" content="0" />    
-<title>已结束流程列表</title>
+<title>已结束流程列表(暂时没用)</title>
 <link href="${ctx }/css/common/jquery.qtip.min.css" type="text/css" rel="stylesheet" />
 <script src="${ctx }/js/workflow.js" type="text/javascript"></script>
 <script src="${ctx }/js/common/jquery.outerhtml.js" type="text/javascript"></script>

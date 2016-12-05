@@ -3,6 +3,7 @@
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 %>
+
 <%@ include file="/WEB-INF/views/taglibsForActiviti.jsp"%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -26,7 +27,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   	</style>
 	<script type="text/javascript">
 
-	var ctx = "${ctx}";
+		var ctx = "${ctx}";
+		
 		Ext.onReady(function(){
 			
 			Ext.QuickTips.init();
@@ -175,8 +177,17 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            	graphTrace({pid:pid,pdid:pdid});
 	            }
 	        });
+	        var btnTraceDiagram = new Ext.button.Button({
+	            text: 'diagram-viewer',
+	            iconCls: 'x-button-read',
+	            handler: function () {
+		            var pid =  checkBox(sm,'processInstanceId');
+			        var pdid =   checkBox(sm,'processDefinitionId');
+	            	graphTraceDiagram({pid:pid,pdid:pdid});
+	            }
+	        });
 	        var tbar = Ext.create('Ext.toolbar.Toolbar', {
-	            items: [btnCreateFlow,'-',btnTrace]
+	            items: [btnCreateFlow,'-',btnTrace,btnTraceDiagram]
 	        });
 	       
         

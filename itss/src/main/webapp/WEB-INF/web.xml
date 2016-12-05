@@ -10,8 +10,8 @@
 		<param-value>
 			classpath*:/applicationContext.xml,
 			classpath*:/applicationContext-shiro.xml
-			classpath*:/applicationCotext-cache.xml
-			classpath*:/applicationCotext-activiti.xml
+			classpath*:/applicationContext-cache.xml
+			classpath*:/applicationContext-activiti.xml
 
 		</param-value>
 		
@@ -47,6 +47,18 @@
 		<filter-name>encodingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+	
+	<!-- JSONP -->
+	<filter>
+		<filter-name>JSONPFilter</filter-name>
+		<filter-class>org.activiti.explorer.JsonpCallbackFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>JSONPFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	
 	<filter>
 		<filter-name>shiroFilter</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy

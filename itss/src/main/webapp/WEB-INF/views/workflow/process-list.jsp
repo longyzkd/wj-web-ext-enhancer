@@ -61,15 +61,27 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             }
         });
      
-
-
+    	var delBtn= {
+            	id: 'delBtn',
+                text: '删除',
+                iconCls: 'x-button-delete',
+                handler: delProcess
+            }, convertToModelBtn= {
+            	id: 'convertToModelBtn',
+                text: '转换为Model',
+                iconCls: 'x-button-application_cascade',
+                handler: convertToModel
+            }
+    	  var tbar1 = Ext.create('Ext.toolbar.Toolbar', {
+	            items: [delBtn,'-',convertToModelBtn]
+	        });
       
         
         var sm = Ext.create('Ext.selection.CheckboxModel', { mode: 'MULTI' });
         var grid = Ext.create('Ext.grid.Panel', {
             region: 'center',
             store: store,
-            //dockedItems: [tbar2,tbar1],
+            dockedItems: [tbar1],
             selModel: sm,
             columnLines: false,
             viewConfig:{getRowClass:changeRowClass},
@@ -126,19 +138,95 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         
         function picRenderer(value,meta,record) {
 
-            var url =basepath+'/workflow/process/process-definition?processDefinitionId='+record.get('id')+'&resourceType=image';
+            var url =basepath+'/workflow/resource/process-definition?processDefinitionId='+record.get('id')+'&resourceType=image';
         	 return '<a target="_blank"  href="' + url + '">' + value+ '</a>';  
         }
         
         
         function xmlRenderer(value,meta,record) {
 
-            var url =basepath+'/workflow/process/process-definition?processDefinitionId='+record.get('id')+'&resourceType=xml';
+            var url =basepath+'/workflow/resource/process-definition?processDefinitionId='+record.get('id')+'&resourceType=xml';
         	 return '<a target="_blank"  href="' + url + '">' + value+ '</a>';  
         }
         
         
-        
+        function delProcess(){
+
+        	   var deploymentId =  checkBox(sm,'deploymentId');
+        	   if(!deploymentId){
+	       			return ;
+	       		}
+        	var url = basepath+'/workflow/process/delete?deploymentId='+deploymentId;
+            Ext.Msg.confirm('删除记录', '确认要删除该记录吗?', function (btn) {
+                if (btn == 'yes') {
+                    Ext.Msg.wait('正在处理，请稍等......');
+                    Ext.Ajax.request({
+                        url: url,
+                        success: function (response) {
+                            Ext.Msg.hide();
+                            var responseText = Ext.decode(response.responseText);
+                            Ext.Msg.show({
+                                title: '提示',
+                                msg: responseText.msg ,
+                                buttons: Ext.Msg.OK,
+                                icon: Ext.Msg.INFO,
+                                fn: function () {
+                                	store.load();
+                                }
+                            });
+                        },
+                        failure: function (response) {
+                            Ext.Msg.hide();
+                            var responseText = Ext.decode(response.responseText);
+                            Ext.Msg.show({
+                                title: '提示',
+                                msg: responseText.msg,
+                                buttons: Ext.Msg.OK,
+                                icon: Ext.Msg.WARNING
+                            });
+                        }
+                    });
+                }
+            });
+
+         }
+
+
+        function convertToModel(){
+			   var id =  checkBox(sm,'id');
+			   if(!id){
+	       			return ;
+	       		}
+			var url = basepath+'/workflow/process/convert-to-model/'+id;
+	                    Ext.Msg.wait('正在处理，请稍等......');
+	                    Ext.Ajax.request({
+	                        url: url,
+	                        success: function (response) {
+	                            Ext.Msg.hide();
+	                            var responseText = Ext.decode(response.responseText);
+	                            Ext.Msg.show({
+	                                title: '提示',
+	                                msg: responseText.msg ,
+	                                buttons: Ext.Msg.OK,
+	                                icon: Ext.Msg.INFO,
+	                                fn: function () {
+	                                	store.load();
+	                                }
+	                            });
+	                        },
+	                        failure: function (response) {
+	                            Ext.Msg.hide();
+	                            var responseText = Ext.decode(response.responseText);
+	                            Ext.Msg.show({
+	                                title: '提示',
+	                                msg: responseText.msg,
+	                                buttons: Ext.Msg.OK,
+	                                icon: Ext.Msg.WARNING
+	                            });
+	                        }
+	                    });
+
+            }
         
         
         

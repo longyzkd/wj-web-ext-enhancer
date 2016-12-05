@@ -81,6 +81,7 @@ public class ModelerController extends CommonController{
 	/**
 	 * 查找分页后的grid
 	 */
+	//Model.name 是 xml的文件名
 	@RequestMapping(value="listData")
 	public void listData(Page page,Log vo,HttpServletResponse response) {
 		

@@ -273,7 +273,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                    }
 
              });
-             var action_url= '${ctx}/permission/checkTree';
+             var action_url= basepath+'/permission/checkTree';
 
              Ext.Ajax.request({
                  url: action_url,

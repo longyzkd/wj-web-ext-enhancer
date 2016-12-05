@@ -20,10 +20,17 @@ import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
+import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.image.ProcessDiagramGenerator;
+import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.Logger;
@@ -44,8 +51,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.kingen.bean.User;
 import com.kingen.bean.workflow.BaseVO;
 import com.kingen.service.account.AccountService;
@@ -55,7 +60,6 @@ import com.kingen.service.workflow.WorkflowTraceService;
 import com.kingen.util.ActivitiUtils;
 import com.kingen.util.JsonResultBuilder;
 import com.kingen.util.Page;
-import com.kingen.util.PageUtil;
 import com.kingen.util.workflow.WorkflowUtils;
 import com.kingen.web.CommonController;
 
@@ -66,8 +70,8 @@ import com.kingen.web.CommonController;
  */
 @Controller
 @RequestMapping("/workflow")
-public class ProcessController extends CommonController{
-	private static final Logger logger = LoggerFactory.getLogger(ProcessController.class);
+public class ActivitiController extends CommonController{
+	private static final Logger logger = LoggerFactory.getLogger(ActivitiController.class);
     
 	@Autowired
 	protected AccountService userService;
@@ -83,7 +87,16 @@ public class ProcessController extends CommonController{
 	
 	@Autowired
 	private WorkflowDeployService workflowProcessDefinitionService;
-    
+	
+	  @Autowired
+	    ProcessEngineConfiguration processEngineConfiguration;
+	  
+	  
+	  @Autowired
+	   protected RuntimeService runtimeService;
+	  @Autowired
+	    ProcessEngineFactoryBean processEngine;
+
     /**
 	 * 查询待办任务
 	 * @param session
@@ -160,6 +173,7 @@ public class ProcessController extends CommonController{
      * @throws Exception 
      */
 	//暂时没用
+	@Deprecated
     @RequestMapping(value = "/process/showDiagram/{processInstanceId}", method = RequestMethod.GET)
 	public void showDiagram(@PathVariable("processInstanceId") String processInstanceId, HttpServletResponse response) throws Exception {
 	        InputStream imageStream = this.processService.getDiagram(processInstanceId);
@@ -172,13 +186,15 @@ public class ProcessController extends CommonController{
 	}
     
     /**
+     * 读取资源，通过部署ID
+     * 
      * 显示图片，通过部署id，不带流程跟踪(没有乱码问题)
      * @param processDefinitionId
      * @param resourceType	资源类型(xml|image)
      * @param response
      * @throws Exception
      */
-    @RequestMapping(value = "/process/process-definition")
+    @RequestMapping(value = "/resource/process-definition")
     public void loadByDeployment(@RequestParam("processDefinitionId") String processDefinitionId, @RequestParam("resourceType") String resourceType,
                                  HttpServletResponse response) throws Exception {
     	InputStream resourceAsStream = this.processService.getDiagramByProDefinitionId_noTrace(resourceType, processDefinitionId);
@@ -191,6 +207,8 @@ public class ProcessController extends CommonController{
     
     
     /**
+     * 读取资源，通过流程ID
+     * 
      * 显示图片，通过流程id，不带流程跟踪(没有乱码问题)
      *
      * @param resourceType      资源类型(xml|image)
@@ -199,7 +217,7 @@ public class ProcessController extends CommonController{
      * @throws Exception
      */
     
-    @RequestMapping(value = "/process/process-instance")
+    @RequestMapping(value = "/resource/process-instance")
     public void loadByProcessInstance(@RequestParam("type") String resourceType, @RequestParam("pid") String processInstanceId, HttpServletResponse response)
             throws Exception {
         InputStream resourceAsStream = this.processService.getDiagramByProInstanceId_noTrace(resourceType, processInstanceId);
@@ -212,7 +230,7 @@ public class ProcessController extends CommonController{
     
     
     /**
-     * 自定义流程跟踪信息-比较灵活(现在用的这个)
+     * 输出跟踪流程信息-比较灵活(现在用的这个)
      *
      * @param processInstanceId
      * @return
@@ -225,6 +243,36 @@ public class ProcessController extends CommonController{
         List<Map<String, Object>> activityInfos = traceService.traceProcess(processInstanceId);
         return activityInfos;
     }
+    
+    /**
+     * 读取带跟踪的图片
+     */
+    @RequestMapping(value = "/process/trace/auto/{executionId}")
+    public void readResource(@PathVariable("executionId") String executionId, HttpServletResponse response)
+            throws Exception {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(executionId).singleResult();
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance.getProcessDefinitionId());
+        List<String> activeActivityIds = runtimeService.getActiveActivityIds(executionId);
+        // 不使用spring请使用下面的两行代码
+//    ProcessEngineImpl defaultProcessEngine = (ProcessEngineImpl) ProcessEngines.getDefaultProcessEngine();
+//    Context.setProcessEngineConfiguration(defaultProcessEngine.getProcessEngineConfiguration());
+
+        // 使用spring注入引擎请使用下面的这行代码
+        processEngineConfiguration = processEngine.getProcessEngineConfiguration();
+        Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
+
+        ProcessDiagramGenerator diagramGenerator = processEngineConfiguration.getProcessDiagramGenerator();
+        InputStream imageStream = diagramGenerator.generateDiagram(bpmnModel, "png", activeActivityIds);
+
+        // 输出资源内容到相应对象
+        byte[] b = new byte[1024];
+        int len;
+        while ((len = imageStream.read(b, 0, 1024)) != -1) {
+            response.getOutputStream().write(b, 0, len);
+        }
+    }
+
+    
     
     /**
      * 读取运行中的流程
@@ -408,9 +456,12 @@ public class ProcessController extends CommonController{
      * @param deploymentId 流程部署ID
      */
     @RequestMapping(value = "/process/delete")
-    public String delete(@RequestParam("deploymentId") String deploymentId) {
+    public @ResponseBody JSONObject  delete(@RequestParam("deploymentId") String deploymentId) {
         repositoryService.deleteDeployment(deploymentId, true);
-        return "redirect:/processAction/process/listProcess_page";
+        
+        return JsonResultBuilder.success(true).msg("流程删除成功！").json();
+        
+//        return "redirect:/processAction/process/listProcess_page";
     }
     
     /**
@@ -535,9 +586,9 @@ public class ProcessController extends CommonController{
      * @throws UnsupportedEncodingException
      * @throws XMLStreamException
      */
-    @RequiresPermissions("admin:process:*")
-    @RequestMapping(value = "/process/convert_to_model")
-    public String convertToModel(@RequestParam("processDefinitionId") String processDefinitionId)
+//    @RequiresPermissions("admin:process:*")
+    @RequestMapping(value = "/process/convert-to-model/{processDefinitionId:.+}") //使用SpEL 解决 @PathVariable出现点号"."时导致路径参数截断获取不全
+    public @ResponseBody JSONObject convertToModel(@PathVariable("processDefinitionId") String processDefinitionId)
             throws UnsupportedEncodingException, XMLStreamException {
     	ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
                 .processDefinitionId(processDefinitionId).singleResult();
@@ -565,7 +616,8 @@ public class ProcessController extends CommonController{
 
         repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
 
-        return "redirect:/processAction/process/listProcess_page";
+        return JsonResultBuilder.success(true).msg("转换成功！").json();
+//        return "redirect:/processAction/process/listProcess_page";
     }
     
 }
