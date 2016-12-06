@@ -9,6 +9,9 @@ public class Constants {
 	
 	public static String DEFAULT_PWD ="123456";
 	
+	public static final String STATUS="status";	
+	
+	
 	public enum UserStatusEnum	{  
 		/**
 		 * 1 激活
@@ -31,7 +34,7 @@ public class Constants {
 		 * 1 激活
 		 * 0 屏蔽
 		 */
-		Success("success"), Fail("fail");
+		success("success"), fail("fail");
 		
 		private String index; 
 		
@@ -46,9 +49,12 @@ public class Constants {
 	public enum ActivitiStatusEnum	{  
 		/**
 		 * 启用
+		 */
+		work("work"), 
+		/**
 		 * 未启用
 		 */
-		Work("work"), NotWork("notWork");
+		notWork("notWork");
 		
 		private String index; 
 		

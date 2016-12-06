@@ -43,7 +43,6 @@ import com.kingen.web.CommonController;
 public class ModelerController extends CommonController{
 	private static final Logger logger = LoggerFactory.getLogger(ModelerController.class);
 	
-	public static final String STATUS="status";	
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -124,7 +123,7 @@ public class ModelerController extends CommonController{
             description = StringUtils.defaultString(description);
             modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, description);
             
-            modelObjectNode.put(STATUS, Constants.ActivitiStatusEnum.NotWork.getIndex());//未启用
+            modelObjectNode.put(Constants.STATUS, Constants.ActivitiStatusEnum.notWork.getIndex());//未启用
             
             
             modelData.setMetaInfo(modelObjectNode.toString());
@@ -167,7 +166,7 @@ public class ModelerController extends CommonController{
             String metaInfo = modelData.getMetaInfo();
             ObjectNode node = mapper.readValue(metaInfo, ObjectNode.class);
 //            String status = node.get(STATUS).asText();
-            node.put(STATUS, Constants.ActivitiStatusEnum.Work.getIndex());
+            node.put(Constants.STATUS, Constants.ActivitiStatusEnum.work.getIndex());
             modelData.setMetaInfo(node.toString());
             repositoryService.saveModel(modelData); 
             

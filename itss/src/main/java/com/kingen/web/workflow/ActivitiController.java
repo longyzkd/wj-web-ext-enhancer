@@ -32,6 +32,7 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.spring.ProcessEngineFactoryBean;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ import com.kingen.service.workflow.ProcessService;
 import com.kingen.service.workflow.WorkflowDeployService;
 import com.kingen.service.workflow.WorkflowTraceService;
 import com.kingen.util.ActivitiUtils;
+import com.kingen.util.Constants;
 import com.kingen.util.JsonResultBuilder;
 import com.kingen.util.Page;
 import com.kingen.util.workflow.WorkflowUtils;
@@ -500,6 +502,7 @@ public class ActivitiController extends CommonController{
             for (ProcessDefinition processDefinition : list) {
                 WorkflowUtils.exportDiagramToFile(repositoryService, processDefinition, exportDir);
             }
+            
 //            redirectAttributes.addFlashAttribute("message", "流程部署成功！");
             jsonObject = JsonResultBuilder.success(true).msg("流程部署成功！").json();
             
@@ -610,6 +613,10 @@ public class ActivitiController extends CommonController{
         modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, processDefinition.getName());
         modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
         modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, processDefinition.getDescription());
+        
+        //导入进来的流程默认直接部署了，在转换为Model的时候，状态改为启用（已经部署）
+        modelObjectNode.put(Constants.STATUS, Constants.ActivitiStatusEnum.work.getIndex());
+        
         modelData.setMetaInfo(modelObjectNode.toString());
 
         repositoryService.saveModel(modelData);
