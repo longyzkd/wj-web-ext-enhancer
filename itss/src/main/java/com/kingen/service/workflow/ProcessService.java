@@ -121,20 +121,28 @@ public class ProcessService {
     } 
 
     /**
-     * 读取已结束中的流程(admin查看)
+     * 读取已结束中的流程
      *
      * @return
      */
     
-    public List<BaseVO> findFinishedProcessInstances(Model model) {
+    public Page findFinishedProcessInstances(Page page) {
+//    	public List<BaseVO> findFinishedProcessInstances(Model model) {
         HistoricProcessInstanceQuery historQuery = historyService.createHistoricProcessInstanceQuery().finished();
         Integer totalSum = historQuery.list().size();
-        int[] pageParams = PaginationThreadUtils.setPage(totalSum);
-    	Pagination pagination = PaginationThreadUtils.get();
-		List<HistoricProcessInstance> list = historQuery.orderByProcessInstanceEndTime().desc().listPage(pageParams[0], pageParams[1]);
+//        int[] pageParams = PaginationThreadUtils.setPage(totalSum);
+//    	Pagination pagination = PaginationThreadUtils.get();
+//		List<HistoricProcessInstance> list = historQuery.orderByProcessInstanceEndTime().desc().listPage(pageParams[0], pageParams[1]);
+        page.setTotal(totalSum);
+		List<HistoricProcessInstance> list = historQuery.orderByProcessInstanceEndTime().desc().listPage(page.getFirstResult(),page.getLimit());
 		List<BaseVO> processList = new ArrayList<BaseVO>();
-		
+		  // 关联业务实体
 		for (HistoricProcessInstance historicProcessInstance : list) {
+			
+			//可以这样获取业务实体
+//			 String businessKey = historicProcessInstance.getBusinessKey();
+//			 BaseVO leave = service.getLeave(new Long(businessKey));
+			
 			String processInstanceId = historicProcessInstance.getId();
 			List<HistoricVariableInstance> listVar = this.historyService.createHistoricVariableInstanceQuery().processInstanceId(processInstanceId).list();
 			for(HistoricVariableInstance var : listVar){
@@ -150,8 +158,9 @@ public class ProcessService {
 			}
 		}
 		
-		model.addAttribute("page", pagination.getPageStr());
-        return processList;
+//		model.addAttribute("page", pagination.getPageStr());
+		page.setDataList(processList);
+        return page;
     }
 	
     /**
@@ -369,7 +378,7 @@ public class ProcessService {
 						.createProcessInstanceQuery()
 						.processInstanceId(vac.getProcessInstanceId())
 						.singleResult();
-				Task task = this.taskService.createTaskQuery().processInstanceId(vac.getProcessInstanceId()).singleResult();
+				Task task = this.taskService.createTaskQuery().processInstanceId(vac.getProcessInstanceId()).singleResult();  //只有一个任务吗？
 				if (pi != null) {
 					// 查询流程参数
 					BaseVO base = (BaseVO) this.runtimeService.getVariable(pi.getId(), "entity");
@@ -475,7 +484,7 @@ public class ProcessService {
 
 	
 	public Page<ProcessInstance> listRuningProcess(Page page) throws Exception {
-		ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery();
+		ProcessInstanceQuery processInstanceQuery = runtimeService.createProcessInstanceQuery();//所有流程定义的
 		Integer totalSum = processInstanceQuery.list().size();
 //		int[] pageParams = PaginationThreadUtils.setPage(totalSum);
 //		Pagination pagination = PaginationThreadUtils.get();

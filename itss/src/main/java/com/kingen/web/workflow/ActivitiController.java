@@ -284,6 +284,8 @@ public class ActivitiController extends CommonController{
      * @return
      * @throws Exception
      */
+    
+    //申请查看里面的
     @RequiresPermissions("user:process:running*") //process:vacation,salary,expense:running
     @RequestMapping(value="/process/runingProcessInstance/{businessType}/list_page")
     public String getRuningProcessInstance(@PathVariable("businessType") String businessType,HttpSession session , Model model) throws Exception{
@@ -323,9 +325,29 @@ public class ActivitiController extends CommonController{
     public void listRuningProcess(Page page,Model model,HttpServletResponse response) throws Exception{
     	 page = this.processService.listRuningProcess(page);
     	
-    	model.addAttribute("taskType", BaseVO.RUNNING);
+//    	model.addAttribute("taskType", BaseVO.RUNNING);
     	
     	 writeJson(response,page);
+    }
+    /**
+     * 已结束的流程实例
+     * @param model
+     * @return
+     * @throws Exception
+     */
+//    @RequiresPermissions("admin:process:*")
+    @RequestMapping(value="/process/finished")
+    public String finished(Model model,Page page) throws Exception{
+    	
+    	return "workflow/finished-process";
+    }
+    @RequestMapping(value="/process/finished/data")
+    public void listFinishedProcess(Page page,Model model,HttpServletResponse response) throws Exception{
+    	page = this.processService.findFinishedProcessInstances(page);
+    	
+//    	model.addAttribute("taskType", BaseVO.FINISHED);
+    	
+    	writeJson(response,page);
     }
     
    
@@ -335,14 +357,14 @@ public class ActivitiController extends CommonController{
      * @return
      * @throws Exception 
      */
-    @RequiresPermissions("admin:process:*")
-    @RequestMapping(value = "/process/finishedProcess_page")
-    public String findFinishedProcessInstances(Model model) throws Exception {
-    	List<BaseVO> processList = this.processService.findFinishedProcessInstances(model);
-    	model.addAttribute("processList", processList);
-    	model.addAttribute("taskType", BaseVO.FINISHED);
-    	return "workflow/finished_process";
-    }
+//    @RequiresPermissions("admin:process:*")
+//    @RequestMapping(value = "/process/finishedProcess_page")
+//    public String findFinishedProcessInstances(Model model) throws Exception {
+//    	List<BaseVO> processList = this.processService.findFinishedProcessInstances(model);
+//    	model.addAttribute("processList", processList);
+//    	model.addAttribute("taskType", BaseVO.FINISHED);
+//    	return "workflow/finished_process";
+//    }
     
     /**
      * 激活、挂起流程实例-根据processInstanceId
