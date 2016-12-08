@@ -165,7 +165,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	        var btnCreateFlow = new Ext.button.Button({
 	            text: '服务请求（请假）',
 	            iconCls: 'x-button-read',
-	            handler:createFlow
+	            handler: createFlow
+	        });
+
+	        var btnwj = new Ext.button.Button({
+	            text: 'wj-process（自定义一个流程）',
+	            iconCls: 'x-button-read',
+	            handler: createWjFlow
 	        });
 
 	        var btnTrace = new Ext.button.Button({
@@ -187,7 +193,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            }
 	        });
 	        var tbar = Ext.create('Ext.toolbar.Toolbar', {
-	            items: [btnCreateFlow,'-',btnTrace,btnTraceDiagram]
+	            items: [btnCreateFlow,btnwj,'-',btnTrace,btnTraceDiagram]
 	        });
 	       
         
@@ -321,6 +327,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         function createFlow(){
         	var title = '请选择服务';
         	var url = '<%=path%>/vacation/toAdd';
+        	ShowWindow(store, title, url, 600, 380);
+
+         }
+		//启动请假流程
+        function createWjFlow(){
+        	var title = '请选择服务';
+        	var url = '<%=path%>/otherFlow/toAdd?processKey=wj-process';
         	ShowWindow(store, title, url, 600, 380);
 
          }

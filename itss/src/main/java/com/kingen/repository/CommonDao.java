@@ -73,6 +73,9 @@ public   class CommonDao<T>  {
 	public Serializable saveWithReturnId(T o) {
 		return getCurrentSession().save(o);
 	}
+	public Serializable saveObjWithReturnId(Object o) {
+		return getCurrentSession().save(o);
+	}
 
 	 
 	public T getById(Class<T> c, Serializable id) {

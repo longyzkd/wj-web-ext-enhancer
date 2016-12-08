@@ -87,7 +87,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
           
             var txtDescription =  Ext.widget('textfield',{
 
-                   name : 'description',
+                   name : 'metaInfo.description',
                    fieldLabel: '描述',
                    maxLength :100
                 });
@@ -96,7 +96,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
            
             var formRight = new Ext.form.Panel({
                 region: 'center',
-                title: '用户信息&nbsp;&nbsp;' + titleName(action),
+                title: '服务项&nbsp;&nbsp;' + titleName(action),
                 width: '100%',
                 bodyPadding: 10,
                 buttonAlign: 'center',
@@ -110,6 +110,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                         items: [txtServiceName,txtServiceCode]
                     },{
                         xtype: 'fieldcontainer',
+                        id:'forAdd',
                         layout: { type: 'hbox', align: 'middle' },
                         items: [txtServiceType,txtFlowTemplate]
                     } ,{
@@ -131,8 +132,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 }]
             });
            if(action=='update'){
-           	
-           		formRight.remove(txtServiceType).remove(txtFlowTemplate);
+           	/*
+           		formRight.remove(txtServiceType);
+           		formRight.remove(txtFlowTemplate);
+          	*/
+          	formRight.remove(Ext.getCmp('forAdd'));
            }
            //保证顺序之用
           // formRight.add(treeRights);
@@ -154,7 +158,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	                {name: 'version', type: 'string'},
 	                {name: 'createTime'},
 	                {name: 'lastUpdateTime	'},
-	                {name: 'metaInfo'},
+	                {name: 'metaInfo'}, 
+	                {name: 'metaInfo.description' , mapping : 'metaInfo.description'},
+	                {name: 'metaInfo.status' , mapping : 'metaInfo.status'}
 	            ]
 
 	        });
@@ -171,6 +177,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     load: function (store, options) {
                        
                         formRight.getForm().loadRecord(store.getAt(0));
+
+                        
+                        var desc = Ext.decode(store.getAt(0).get('metaInfo')  ).description;
+                        txtDescription.setValue(desc);
                     }
                 }
         	});

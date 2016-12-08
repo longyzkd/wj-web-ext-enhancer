@@ -14,15 +14,25 @@ public interface ActivitiAware {
 	 */
 	String getTitle();
 	/**
-	 * 服务项code
+	 * 服务项类型(processKey)
 	 * @return
 	 */
 	String getBusinessType();
 	/**
-	 * 服务项名称
+	 * 服务项code
+	 * @return
+	 */
+	//String getBusinessKey();
+	/**
+	 * 服务项名称 ，比如是 主机维护、桌面维护、一卡通系统..
 	 * @return
 	 */
 	String getBusinessName();
+	/**
+	 * 业务数据id
+	 * @return
+	 */
+	Integer getId();
 	
 	
 	

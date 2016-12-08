@@ -29,7 +29,8 @@ public class MenuDao extends CommonDao<Menu>  {
 	}
 
 	public List<Menu> findMenusBy(String userIdString) {
-		String sql = "SELECT t.* FROM tmanagermenu t "
+		//防止一个人多个组，查询重复菜单出来
+		String sql = "SELECT distinct t.* FROM tmanagermenu t "
 				+ " JOIN sys_org_menu a ON a.menu_id=t.menuid "
 				+ " join sys_user_org uo on uo.org_id=a.org_id "
 				+ " join tmanageruser u on uo.user_id=u.userid   and  u.userid=:p1";

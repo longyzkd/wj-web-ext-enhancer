@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -32,6 +33,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.kingen.bean.Log;
+import com.kingen.service.workflow.ProcessService;
+import com.kingen.service.workflow.WorkflowDeployService;
 import com.kingen.util.Constants;
 import com.kingen.util.JsonResultBuilder;
 import com.kingen.util.Page;
@@ -45,6 +48,9 @@ public class ModelerController extends CommonController{
 	
 	@Autowired
 	private RepositoryService repositoryService;
+	
+	@Autowired
+	private WorkflowDeployService deployService;
 	
 	/**
 	 * 模型列表
@@ -77,6 +83,15 @@ public class ModelerController extends CommonController{
 		return mav;
 	}
 	
+	@RequestMapping(value="one")
+	public void one(String modelId,HttpServletResponse response) {
+		
+		  ModelQuery modelQuery = repositoryService.createModelQuery();
+	       // int[] pageParams = PaginationThreadUtils.setPage(modelQuery.list().size());
+		  
+		  Model one = modelQuery.modelId(modelId).singleResult();
+	        writeJson(response,one);
+	}
 	/**
 	 * 查找分页后的grid
 	 */
@@ -84,11 +99,11 @@ public class ModelerController extends CommonController{
 	@RequestMapping(value="listData")
 	public void listData(Page page,Log vo,HttpServletResponse response) {
 		
-		  ModelQuery modelQuery = repositoryService.createModelQuery();
-	       // int[] pageParams = PaginationThreadUtils.setPage(modelQuery.list().size());
-		  
-	        List<Model> list = modelQuery.listPage(page.getFirstResult(), page.getLimit());
-	        writeJson(response,list);
+		ModelQuery modelQuery = repositoryService.createModelQuery();
+		// int[] pageParams = PaginationThreadUtils.setPage(modelQuery.list().size());
+		
+		List<Model> list = modelQuery.listPage(page.getFirstResult(), page.getLimit());
+		writeJson(response,list);
 	}
 	
 	
@@ -101,9 +116,9 @@ public class ModelerController extends CommonController{
 	 * @param response
 	 */
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
-    public void create( String name, String key, String description,String serviceType,String flowTemplate,
+    public void create( String name, String key,@RequestParam("metaInfo.description") String description,String serviceType,String flowTemplate,
                        HttpServletRequest request, HttpServletResponse response) {
-		logger.info("name: "+name+" key: "+key+" des: "+description);
+		logger.debug("name: "+name+" key: "+key+" des: "+description);
 		JSONObject jsonObject= new JSONObject();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -117,6 +132,8 @@ public class ModelerController extends CommonController{
             
             Model modelData = repositoryService.newModel();
 
+            //metainfo,页面显示description
+            //model里面有name，metainfo里面也有name，页面取name值，从model里面取的
             ObjectNode modelObjectNode = objectMapper.createObjectNode();
             modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, name);
             modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
@@ -148,6 +165,53 @@ public class ModelerController extends CommonController{
     }
 	
 	/**
+	 * 创建模型
+	 * @param name
+	 * @param key
+	 * @param description
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping(value = "/update", method = RequestMethod.POST)
+	public void update( String modelId,String name, String key,@RequestParam("metaInfo.description") String description,
+			HttpServletRequest request, HttpServletResponse response) {
+		logger.debug("name: "+name+" key: "+key+" des: "+description);
+		JSONObject jsonObject= new JSONObject();
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			
+			  ModelQuery modelQuery = repositoryService.createModelQuery();
+			  
+			  Model modelData = modelQuery.modelId(modelId).singleResult();
+			
+			//metainfo,页面显示description
+			//model里面有name，metainfo里面也有name，页面取name值，从model里面取的
+			ObjectNode modelObjectNode = objectMapper.createObjectNode();
+			modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, name);
+			modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
+			description = StringUtils.defaultString(description);
+			modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, description);
+			
+			
+			
+			modelData.setMetaInfo(modelObjectNode.toString());
+			modelData.setName(name);
+			modelData.setKey(StringUtils.defaultString(key));
+			
+			repositoryService.saveModel(modelData);
+			
+			
+			
+			jsonObject = JsonResultBuilder.success(true).msg("成功").data(modelData.getId()).json();
+			
+		} catch (Exception e) {
+			logger.error("创建模型失败：", e);
+			jsonObject = JsonResultBuilder.success(false).msg("失败").json();
+		}
+		writeJson(response,jsonObject); 
+	}
+	
+	/**
 	 * 根据Model部署流程
 	 * @param modelId
 	 * @param redirectAttributes
@@ -159,22 +223,8 @@ public class ModelerController extends CommonController{
         try {
             Model modelData = repositoryService.getModel(modelId);
             ObjectNode modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelData.getId()));
-            byte[] bpmnBytes = null;
-            
-            //修改model的状态为 启用
-            ObjectMapper mapper = new ObjectMapper();  
-            String metaInfo = modelData.getMetaInfo();
-            ObjectNode node = mapper.readValue(metaInfo, ObjectNode.class);
-//            String status = node.get(STATUS).asText();
-            node.put(Constants.STATUS, Constants.ActivitiStatusEnum.work.getIndex());
-            modelData.setMetaInfo(node.toString());
-            repositoryService.saveModel(modelData); 
-            
-            BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-            bpmnBytes = new BpmnXMLConverter().convertToXML(model);
-
-            String processName = modelData.getName() + ".bpmn20.xml";
-            Deployment deployment = repositoryService.createDeployment().name(modelData.getName()).addString(processName, new String(bpmnBytes)).deploy();
+           
+            Deployment  deployment= deployService.deployModelWithStatus(modelData,modelNode);
             
 //            redirectAttributes.addFlashAttribute("message", "部署成功，部署ID=" + deployment.getId());
             jsonObject = JsonResultBuilder.success(true).msg("部署成功，部署ID=" + deployment.getId()).data(deployment.getId()).json();

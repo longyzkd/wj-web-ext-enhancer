@@ -162,9 +162,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	                {name: 'version', type: 'string'},
 	                {name: 'createTime'},
 	                {name: 'lastUpdateTime'},
-	               // {name: 'metaInfo.description' , mapping : 'metaInfo.description'},
-	               // {name: 'metaInfo.status' , mapping : 'metaInfo.status'}
-	                {name: 'metaInfo' }
+	                {name: 'metaInfo.description' , mapping : 'metaInfo.description'},
+	                {name: 'metaInfo.status' , mapping : 'metaInfo.status'},
+	                {name: 'metaInfo' }  //metaInfo在后台是JSON字符串
 	            ]
 
 	        });

@@ -52,9 +52,9 @@ import com.kingen.web.workflow.PaginationThreadUtils;
  */
 
 @Controller
-@RequestMapping("/vacation")
-public class VacationController extends CommonController{
-	private static final Logger logger = LoggerFactory.getLogger(VacationController.class);
+@RequestMapping("/otherFlow")
+public class OtherFlowController extends CommonController{
+	private static final Logger logger = LoggerFactory.getLogger(OtherFlowController.class);
 	
 	@Autowired
 	private VacationService vacationService;
@@ -85,13 +85,6 @@ public class VacationController extends CommonController{
 	public String toList(HttpSession session, Model model) throws Exception{
 		User user = getCurrentUser();
 		List<Vacation> list = this.vacationService.list(user.getUserId());
-//		for(Vacation v : list){
-//			if(BaseVO.APPROVAL_SUCCESS.equals(v.getStatus())){
-//				Vacation vacation = (Vacation)this.historyService.createHistoricVariableInstanceQuery()
-//					.processInstanceId(v.getProcessInstanceId()).variableName("entity");
-//				
-//			}
-//		}
 		Pagination pagination = PaginationThreadUtils.get();
 		model.addAttribute("page", pagination.getPageStr());
 		model.addAttribute("vacationList", list);
@@ -105,9 +98,11 @@ public class VacationController extends CommonController{
 	 */
 //	@RequiresPermissions("user:vacation:toAdd")
 	@RequestMapping(value = "/toAdd", method = RequestMethod.GET)
-	public ModelAndView toAdd(Model model){
+	public ModelAndView toAdd(Model model,String processKey){
+		//TODO 具体的服务项（流程） 传到页面上
 		if(!model.containsAttribute("vacation")) {
             model.addAttribute("vacation", new Vacation());
+            model.addAttribute("processKey", processKey);
         }
 		return new ModelAndView("vacation/vacation-add").addObject(model);
 	}
@@ -135,7 +130,9 @@ public class VacationController extends CommonController{
 //	@RequiresPermissions("user:vacation:doAdd")
 	@RequestMapping(value = "/doAdd", method = RequestMethod.POST)
 	public void  doAdd(
-			@ModelAttribute("vacation")  Vacation vacation,BindingResult results, 
+			@ModelAttribute("vacation")  Vacation vacation,  //业务数据，可以新建一个Business 类
+			@RequestParam(defaultValue=BaseVO.OTHER) String processKey, //process identifier
+			BindingResult results, 
 			RedirectAttributes redirectAttributes, 
 			HttpSession session,  HttpServletResponse response,
 			Model model) throws Exception{
@@ -144,15 +141,15 @@ public class VacationController extends CommonController{
 		/*     业务数据    */
         vacation.setUserId(user.getUserId());
         vacation.setUser_name(user.getUsername());
-        vacation.setTitle(user.getUsername()+" 的请假申请");
-        vacation.setBusinessType(BaseVO.VACATION); 			//业务类型：请假申请
+        vacation.setTitle("测试wj流程");//根据processKey找到name
+        vacation.setBusinessType(processKey); 			//业务类型：请假申请
         vacation.setStatus(BaseVO.PENDING);					//审批中
         vacation.setApplyDate(new Date());
         
         
         JSONObject jsonObject= new JSONObject();
         try {
-        	String processInstanceId = this.processService.startVacation(vacation);
+        	String processInstanceId = this.processService.startOther(vacation);
         	
 //            redirectAttributes.addFlashAttribute("message", "流程已启动，流程ID：" + processInstanceId);
         	

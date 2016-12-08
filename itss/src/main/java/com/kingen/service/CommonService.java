@@ -196,6 +196,9 @@ public class CommonService<T> {
 	public Serializable add(T bean) throws Exception{
 		return dao.saveWithReturnId(bean);
 	}
+	public Serializable addObj(Object bean) throws Exception{
+		return dao.saveObjWithReturnId(bean);
+	}
 
 	
 	public void saveOrUpdate(T bean) throws Exception{

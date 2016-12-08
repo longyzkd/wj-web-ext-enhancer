@@ -7,9 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
+import javax.transaction.Transactional;
+
+import org.activiti.bpmn.converter.BpmnXMLConverter;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
+import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -20,6 +26,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.kingen.util.Constants;
 import com.kingen.util.workflow.WorkflowUtils;
 
 /**
@@ -28,6 +39,7 @@ import com.kingen.util.workflow.WorkflowUtils;
  * @author 
  */
 @Service
+@Transactional
 public class WorkflowDeployService {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
@@ -249,4 +261,36 @@ public class WorkflowDeployService {
     public void redeployAllBpmn(String exportDir) throws Exception {
     	this.deployFromClassPathBpmn(exportDir);
     }
+
+    
+    /**
+     * 部署Model并修改model的状态为启用，放在事务里
+     * @author wj
+     * @param modelData
+     * @param modelNode 
+     * @param processName
+     * @param bpmnBytes
+     * @throws IOException 
+     * @throws JsonMappingException 
+     * @throws JsonParseException 
+     */
+	public Deployment deployModelWithStatus(Model modelData, ObjectNode modelNode) throws JsonParseException, JsonMappingException, IOException {
+		 byte[] bpmnBytes = null;
+        //修改model的状态为 启用
+        ObjectMapper mapper = new ObjectMapper();  
+        String metaInfo = modelData.getMetaInfo();
+        ObjectNode node = mapper.readValue(metaInfo, ObjectNode.class);
+//        String status = node.get(STATUS).asText();
+        node.put(Constants.STATUS, Constants.ActivitiStatusEnum.work.getIndex());
+        modelData.setMetaInfo(node.toString());
+        repositoryService.saveModel(modelData); 
+        
+        BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+        bpmnBytes = new BpmnXMLConverter().convertToXML(model);
+
+        String processName = modelData.getName() + ".bpmn20.xml";
+        Deployment deployment = repositoryService.createDeployment().name(modelData.getName()).addString(processName, new String(bpmnBytes)).deploy();
+		
+        return deployment;
+	}
 }

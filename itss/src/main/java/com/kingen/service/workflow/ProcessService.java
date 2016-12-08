@@ -425,6 +425,36 @@ public class ProcessService {
         this.identityService.setAuthenticatedUserId(null);
         return processInstanceId;
 	}
+	//service 之间调用 事务传播
+	public String startOther(Vacation vacation) throws Exception {
+		
+		vacationService.add(vacation);
+		String businessKey = vacation.getId().toString();
+		vacation.setBusinessKey(businessKey);//没什么用
+		
+		// 用来设置启动流程的人员ID，引擎会自动把用户ID保存到activiti:initiator中
+		identityService.setAuthenticatedUserId(vacation.getUserId().toString());
+		Map<String, Object> variables = new HashMap<String, Object>();
+		variables.put("entity", vacation);
+		
+		//由userTask自动分配审批权限
+//        if(vacation.getDays() <= 3){
+//        	variables.put("auditGroup", "manager");
+//        }else{
+//        	variables.put("auditGroup", "director");
+//        }
+		
+		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(vacation.getBusinessType(), businessKey, variables);
+		String processInstanceId = processInstance.getId();
+		vacation.setProcessInstanceId(processInstanceId);
+		this.vacationService.doUpdate(vacation);
+		
+		logger.info("processInstanceId: "+processInstanceId);
+		//最后要设置null，就是这么做，还没研究为什么
+		this.identityService.setAuthenticatedUserId(null);
+		return processInstanceId;
+	}
+
 
 
 	

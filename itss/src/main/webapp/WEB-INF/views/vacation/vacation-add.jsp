@@ -14,7 +14,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			
 			Ext.QuickTips.init();
 
-           
+           	var processKey = '${processKey}';
             //-----------------------------------------------------------------------
             
          
@@ -138,7 +138,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
             function handleProcess() {
             	 var action_url= '<%=basePath%>vacation/doAdd';
-                    
+
+                 if(processKey=='wj-process' || processKey=='wj-process1'){//跳转到不同的逻辑处理，开启不同的流程，正常要传流程key的
+                	 action_url= '<%=basePath%>otherFlow/doAdd?processKey='+processKey;
+
+                     }
+                     
                     var form = this.up('form').getForm();
                     if (form.isValid()) {
                         form.submit({
