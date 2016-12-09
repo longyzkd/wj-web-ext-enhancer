@@ -272,7 +272,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     { header: '流程实例ID', dataIndex: 'processInstanceId', align: 'center', flex:2},
                     { header: '当前节点', dataIndex: 'activityName', align: 'center', flex:2},
                     { header: '创建时间', dataIndex: 'applyDateStr', align: 'center', flex:2},
-                    { header: '状态', dataIndex: 'suspended', align: 'center', flex:2,renderer:function(value,meta,record ){return value ? "已挂起 V:"+record.get('version') : "正常 V:"+record.get('version') }},
+                    { header: '状态', dataIndex: 'suspended', align: 'center', flex:2,renderer:function(value,meta,record ){return value ? "已挂起 V:"+record.get('version') : "正常 V:"+record.get('version') }}
 				],
 				bbar: createPage(store)
         });

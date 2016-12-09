@@ -5,7 +5,7 @@
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <link rel="stylesheet" href="${ctx}/static/activiti/css/style.css" type="text/css" />
-<link rel="stylesheet" href="${ctx}/static/activiti/css/main.css" type="text/css" />
+<%-- <link rel="stylesheet" href="${ctx}/static/activiti/css/main.css" type="text/css" /> --%>
 <link rel="stylesheet" href="${ctx}/static/activiti/css/jquery-ui.min.css" type="text/css" />
 <link rel="stylesheet" href="${ctx}/static/activiti/css/jquery-ui.structure.min.css" type="text/css" />
 <link rel="stylesheet" href="${ctx}/static/activiti/css/jquery-ui.theme.min.css" type="text/css" />
