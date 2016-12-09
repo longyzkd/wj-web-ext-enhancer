@@ -41,15 +41,7 @@ public class LoginController extends CommonController {
 		return "account/login";
 	}
 	
-	//JS success 重定向到这
-	@RequestMapping(value = "welcome" ,method = RequestMethod.GET)
-	public ModelAndView  welcome( Model model) {//用这个返回首页 ext请求controller js会加上前缀login 导致404
-		ModelAndView modelAndView = new ModelAndView();  
-        modelAndView.addObject("", "");  
-        modelAndView.setViewName("home");  
-        return modelAndView;  
-		
-	}
+	
 	
 
 }

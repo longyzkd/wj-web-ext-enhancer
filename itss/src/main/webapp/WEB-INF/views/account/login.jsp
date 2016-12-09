@@ -136,7 +136,7 @@
                     //alert(result.success);
                    if(result.success){
                    
-                    self.location.href="${ctx}/login/welcome";
+                    self.location.href="${ctx}/main/home";
                    }else{
                    
                    	 Ext.Msg.show({
