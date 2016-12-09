@@ -494,7 +494,12 @@ public class ProcessService {
 		if(!CollectionUtils.isEmpty(list)){
 			for(ProcessInstance pi : list){
 				//String businessKey = pi.getBusinessKey();
-				 
+				//可以这样获取业务实体
+//				String businessKey = processInstance.getBusinessKey();
+//	            if (businessKey == null) {
+//	                continue;
+//	            }
+//	            Leave leave = leaveManager.getLeave(new Long(businessKey));
 				
 				ActivitiAware a = (ActivitiAware) this.runtimeService.getVariable(pi.getId(), "entity");
 				result.add(ActivitiUtils.mapSetterProcessInstanceWithEntity(pi,a));

@@ -172,6 +172,7 @@ public class ActivitiUtils {
 		m.put("name", p.getName());
 		m.put("description", p.getDescription());
 		m.put("suspended", p.isSuspended());
+		m.put("version", p.getProcessDefinitionVersion());
 		return m;
 	}
 
@@ -219,11 +220,14 @@ public class ActivitiUtils {
 		m.put("description", p.getDescription());
 
 		m.put("startTime", p.getStartTime());
-		m.put("sndTime", p.getEndTime());
+		m.put("endTime", p.getEndTime());
 		m.put("businessKey", p.getBusinessKey());
 		m.put("deploymentId", p.getDeploymentId());
 		m.put("startActivityId", p.getStartActivityId());
 		m.put("endActivityId", p.getEndActivityId());
+		m.put("deleteReason", p.getDeleteReason());
+		
+		
 
 		return m;
 	}
@@ -261,13 +265,14 @@ public class ActivitiUtils {
 			return null;
 
 		Map<String, Object> m = Maps.newHashMap();
-		m.put("id", pi.getId());
+		m.put("id", pi.getId()); //如果当前是流程实例，那么ID跟processInstanceId 是一样的
 		m.put("processInstanceId", pi.getProcessInstanceId());
 		m.put("processDefinitionId", pi.getProcessDefinitionId());
 		m.put("activityId", pi.getActivityId());
 		m.put("name", pi.getName());
 		m.put("description", pi.getDescription());
 		m.put("suspended", pi.isSuspended());
+		m.put("version", pi.getProcessDefinitionVersion());
 		
 		
 		m.put("clientUint", a.getClientUint());

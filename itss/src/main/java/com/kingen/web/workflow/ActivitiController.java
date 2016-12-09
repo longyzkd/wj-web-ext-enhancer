@@ -374,21 +374,27 @@ public class ActivitiController extends CommonController{
      * @return
      * @throws Exception
      */
-    @RequiresPermissions("admin:process:suspend,active")
+//    @RequiresPermissions("admin:process:suspend,active")
     @RequestMapping(value = "/process/updateProcessStatusByProInstanceId/{status}/{processInstanceId}")
-    public String updateProcessStatusByProInstanceId(
+    public @ResponseBody JSONObject updateProcessStatusByProInstanceId(
     		@PathVariable("status") String status, 
     		@PathVariable("processInstanceId") String processInstanceId,
             RedirectAttributes redirectAttributes) throws Exception{
-    	
+    	JSONObject  jsonObject =null;
     	if (status.equals("active")) {
     		this.processService.activateProcessInstance(processInstanceId);
-            redirectAttributes.addFlashAttribute("message", "已激活ID为[ " + processInstanceId + " ]的流程实例。");
+    		
+    		  jsonObject = JsonResultBuilder.success(true).msg("已激活ID为[ " + processInstanceId + " ]的流程实例。").json();
+    		  
+    		  
+//            redirectAttributes.addFlashAttribute("message", "已激活ID为[ " + processInstanceId + " ]的流程实例。");
         } else if (status.equals("suspend")) {
         	this.processService.suspendProcessInstance(processInstanceId);
-            redirectAttributes.addFlashAttribute("message", "已挂起ID为[ " + processInstanceId + " ]的流程实例。");
+//            redirectAttributes.addFlashAttribute("message", "已挂起ID为[ " + processInstanceId + " ]的流程实例。");
+        	 jsonObject = JsonResultBuilder.success(true).msg("已挂起ID为[ " + processInstanceId + " ]的流程实例。").json();
         }
-    	return "redirect:/processAction/process/runningProcess_page";
+    	
+    	return jsonObject;
     }
     
     /**

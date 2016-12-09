@@ -116,7 +116,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             }
         });
         var tbar = Ext.create('Ext.toolbar.Toolbar', {
-            items: [btnClaim,'-',btnHandle,'-',btnSuspend,btnRecover]
+            items: [btnClaim,'-',btnHandle]
         });
         
         var sm = Ext.create('Ext.selection.CheckboxModel', { mode: 'MULTI' });
@@ -133,7 +133,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 					{ header: '任务名称', dataIndex: 'title', align: 'center', flex:1 },
                     { header: '处理事宜', dataIndex: 'task.name', align: 'center', flex:2},
                     { header: '申请人', dataIndex: 'user_name', align: 'center', flex:2},
-                    { header: '状态', dataIndex: 'pi.suspended', align: 'center', flex:2,renderer:function(value){return value ? "已挂起" : "正常" }},
+                    { header: '状态', dataIndex: 'pi.suspended', align: 'center', flex:2,renderer:function(value,meta,record ){return value ? "已挂起 V:"+record.get('pd.version') : "正常 V:"+record.get('pd.version') }},
                     { header: '创建时间', dataIndex: 'task.createTime', align: 'center', flex:1}
 				],
 				bbar: createPage(store)
@@ -203,6 +203,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         	var  taskId = checkBox(sm,'task.id');
         	var  businessType = checkBox(sm,'businessType');
         	var  taskDefinitionKey = checkBox(sm,'task.taskDefinitionKey');
+        	alert(taskDefinitionKey);
        		if(!taskId){
        			return ;
        		}
@@ -222,38 +223,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 
         
-        function suspend(){
-        	var  taskId = checkBox(sm,'taskId');
-       		if(!taskId){
-       			return ;
-       		}
-       		Ext.Ajax.request({
-                url: '<%=basePath%>workflow/claim/'+taskId,
-                success: function (response) {
-                    Ext.Msg.hide();
-                    var responseText = Ext.decode(response.responseText);
-                    Ext.Msg.show({
-                        title: '提示',
-                        msg: responseText.msg,
-                        buttons: Ext.Msg.OK,
-                        icon: Ext.Msg.INFO,
-                        fn: function () {
-                            store.load();
-                        }
-                    });
-                },
-                failure: function (response) {
-                    Ext.Msg.hide();
-                    var responseText = Ext.decode(response.responseText);
-                    Ext.Msg.show({
-                        title: '提示',
-                        msg: responseText.msg,
-                        buttons: Ext.Msg.OK,
-                        icon: Ext.Msg.WARNING
-                    });
-                }
-            });
-        }
+       
 
         
         

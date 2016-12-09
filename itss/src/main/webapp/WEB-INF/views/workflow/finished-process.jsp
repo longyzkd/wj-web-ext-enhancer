@@ -162,17 +162,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 
 
-	        var btnCreateFlow = new Ext.button.Button({
-	            text: '服务请求（请假）',
-	            iconCls: 'x-button-read',
-	            handler: createFlow
-	        });
-
-	        var btnwj = new Ext.button.Button({
-	            text: 'wj-process（自定义一个流程）',
-	            iconCls: 'x-button-read',
-	            handler: createWjFlow
-	        });
+	      
 
 	        var btnTrace = new Ext.button.Button({
 	            text: '跟踪',
@@ -183,31 +173,25 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            	graphTrace({pid:pid,pdid:pdid});
 	            }
 	        });
-	        var btnTraceDiagram = new Ext.button.Button({
-	            text: 'diagram-viewer',
-	            iconCls: 'x-button-read',
-	            handler: function () {
-		            var pid =  checkBox(sm,'processInstanceId');
-			        var pdid =   checkBox(sm,'processDefinitionId');
-	            	graphTraceDiagram({pid:pid,pdid:pdid});
-	            }
-	        });
+	       
 	        var tbar = Ext.create('Ext.toolbar.Toolbar', {
-	            items: [btnCreateFlow,btnwj,'-',btnTrace,btnTraceDiagram]
+	            items: [btnTrace]
 	        });
 	       
         
         Ext.define('ProcessModel', {
             extend: 'Ext.data.Model',
             fields: [
-                {name: 'id',  type: 'string'},
-                {name: 'processInstanceId', type: 'string'},
-                {name: 'processDefinitionId',   type: 'string'},
-                {name: 'suspended', type: 'string'},
-                {name: 'name', type: 'string'},
-                {name: 'description', type: 'string'},
-                {name: 'applyDateStr'},
-                {name: 'finishDateStr'},
+                {name: 'historicProcessInstance'},
+                {name: 'historicProcessInstance.id',  mapping:'historicProcessInstance.id'},
+                {name: 'historicProcessInstance.startTime',  mapping:'historicProcessInstance.startTime'},
+                {name: 'historicProcessInstance.endTime',  mapping:'historicProcessInstance.endTime'},
+                {name: 'historicProcessInstance.businessKey',  mapping:'historicProcessInstance.businessKey'},
+                {name: 'historicProcessInstance.deleteReason',  mapping:'historicProcessInstance.deleteReason'},
+                
+                {name: 'processDefinition'},
+                {name: 'processDefinition.version',  mapping:'processDefinition.version'},
+              
                 
                 {name: 'clientUint'},
                 {name: 'contract'},
@@ -225,7 +209,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             model: 'ProcessModel',
             proxy: {
                 type: 'ajax',
-                url: '<%=basePath%>workflow/process/running/data',
+                url: '<%=basePath%>workflow/process/finished/data',
                 reader: { type: 'json', root: 'dataList' }
             },
             listeners: {
@@ -245,7 +229,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         var grid = Ext.create('Ext.grid.Panel', {
             region: 'center',
             store: store,
-            dockedItems: [tbar],
+        //    dockedItems: [tbar],
             selModel: sm,
             columnLines: false,
             viewConfig:{getRowClass:changeRowClass},
@@ -256,9 +240,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     { header: '合同', dataIndex: 'contract', align: 'center', flex:2},
                     { header: '标题', dataIndex: 'title', align: 'center', flex:1},
                     { header: '服务项', dataIndex: 'businessType', align: 'center', flex:2},
-                    { header: '流程实例ID', dataIndex: 'processInstanceId', align: 'center', flex:2},
-                    { header: '开始时间', dataIndex: 'applyDateStr', align: 'center', flex:2},
-                    { header: '结束时间', dataIndex: 'finishDateStr', align: 'center', flex:2}
+                    { header: '开始时间', dataIndex: 'historicProcessInstance.startTime', align: 'center', flex:2},
+                    { header: '结束时间', dataIndex: 'historicProcessInstance.endTime', align: 'center', flex:2}
 				],
 				bbar: createPage(store)
         });
@@ -271,7 +254,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		    height: 400,
 		    layout: 'border',
 		    items: [{
-		    	 title: '服务台',
+		    	 title: '历史查询',
 		        region:'north',
 		        xtype: 'panel',
 		        margins: '5 0 0 5',
@@ -280,7 +263,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		        layout: 'fit',
 		        dockedItems: [tbar1, tbar2,tbar3]
 		    },{
-		        title: '服务处理历史',
+		        title: '已结束服务处理历史',
 		        region: 'center',     // center region is required, no width/height specified
 		        xtype: 'panel',
 		        layout: 'fit',

@@ -192,8 +192,21 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            	graphTraceDiagram({pid:pid,pdid:pdid});
 	            }
 	        });
+
+
+	        var btnSuspend = new Ext.button.Button({
+	            text: '挂起',
+	            iconCls: 'x-button-read',
+	            handler: suspend
+	        });
+
+	        var btnRecover = new Ext.button.Button({
+	            text: '恢复',
+	            iconCls: 'x-button-read',
+	            handler: recover
+	        });
 	        var tbar = Ext.create('Ext.toolbar.Toolbar', {
-	            items: [btnCreateFlow,btnwj,'-',btnTrace,btnTraceDiagram]
+	            items: [btnCreateFlow,btnwj,'-',btnTrace,btnTraceDiagram,'->',btnSuspend,btnRecover]
 	        });
 	       
         
@@ -203,10 +216,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 {name: 'id',  type: 'string'},
                 {name: 'processInstanceId', type: 'string'},
                 {name: 'processDefinitionId',   type: 'string'},
-                {name: 'suspended', type: 'string'},
+                {name: 'suspended'},
                 {name: 'name', type: 'string'},
                 {name: 'description', type: 'string'},
                 {name: 'applyDateStr'},
+                {name: 'version'},
                 
                 {name: 'clientUint'},
                 {name: 'contract'},
@@ -257,7 +271,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     { header: '服务项', dataIndex: 'businessType', align: 'center', flex:2},
                     { header: '流程实例ID', dataIndex: 'processInstanceId', align: 'center', flex:2},
                     { header: '当前节点', dataIndex: 'activityName', align: 'center', flex:2},
-                    { header: '创建时间', dataIndex: 'applyDateStr', align: 'center', flex:2}
+                    { header: '创建时间', dataIndex: 'applyDateStr', align: 'center', flex:2},
+                    { header: '状态', dataIndex: 'suspended', align: 'center', flex:2,renderer:function(value,meta,record ){return value ? "已挂起 V:"+record.get('version') : "正常 V:"+record.get('version') }},
 				],
 				bbar: createPage(store)
         });
@@ -310,17 +325,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	        }
 	    } 
 
-	    
-        function typeRenderer(value) {
-        	
-            if (value=='2')  //异常日志
-                return '<img src="<%=path%>/static/jslib/ExtJs/resources/themes/icons/action_stop.gif "  alt="异常日志 " />';
-            else  
-                return '<img src="<%=path%>/static/jslib/ExtJs/resources/themes/icons/accept.png   "  alt="入口日志" />';
-        }
-        
-        
-      
         
         
 		//启动请假流程
@@ -339,6 +343,68 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
          }
         
         
+        function suspend(){
+        	var  processInstanceId = checkBox(sm,'processInstanceId');
+       		if(!processInstanceId){
+       			return ;
+       		}
+       		Ext.Ajax.request({
+                url: basepath+'/workflow/process/updateProcessStatusByProInstanceId/suspend/'+processInstanceId,
+                success: function (response) {
+                    var responseText = Ext.decode(response.responseText);
+                    Ext.Msg.show({
+                        title: '提示',
+                        msg: responseText.msg,
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.INFO,
+                        fn: function () {
+                            store.load();
+                        }
+                    });
+                },
+                failure: function (response) {
+                    var responseText = Ext.decode(response.responseText);
+                    Ext.Msg.show({
+                        title: '提示',
+                        msg: responseText.msg,
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.WARNING
+                    });
+                }
+            });
+        }
+        function recover(){
+        	var  processInstanceId = checkBox(sm,'processInstanceId');
+       		if(!processInstanceId){
+       			return ;
+       		}
+       		Ext.Ajax.request({
+                url: basepath+'/workflow/process/updateProcessStatusByProInstanceId/active/'+processInstanceId,
+                success: function (response) {
+                    var responseText = Ext.decode(response.responseText);
+                    Ext.Msg.show({
+                        title: '提示',
+                        msg: responseText.msg,
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.INFO,
+                        fn: function () {
+                            store.load();
+                        }
+                    });
+                },
+                failure: function (response) {
+                    var responseText = Ext.decode(response.responseText);
+                    Ext.Msg.show({
+                        title: '提示',
+                        msg: responseText.msg,
+                        buttons: Ext.Msg.OK,
+                        icon: Ext.Msg.WARNING
+                    });
+                }
+            });
+        }
+
+
         
 //-----------------------------------------------------------------------------------------------------------
 		});
