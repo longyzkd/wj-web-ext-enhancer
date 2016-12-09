@@ -36,6 +36,7 @@ public class LoginController extends CommonController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
+	@Deprecated
 	public String fail(@RequestParam(FormAuthenticationFilter.DEFAULT_USERNAME_PARAM) String userName, Model model) {
 		model.addAttribute(FormAuthenticationFilter.DEFAULT_USERNAME_PARAM, userName);
 		return "account/login";
