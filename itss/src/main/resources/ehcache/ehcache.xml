@@ -23,11 +23,12 @@
        timeToLiveSeconds="120"
        overflowToDisk="false"/>
 
-    <!-- 登录记录缓存 锁定2分钟 -->
+    <!-- 登录记录缓存 锁定1分钟 -->
+    <!--  如果在1分钟内，再访问，会延迟1分钟？-->
     <cache name="passwordRetryCache"
            maxEntriesLocalHeap="2000"
            eternal="false"
-           timeToIdleSeconds="120"	
+           timeToIdleSeconds="60"	
            timeToLiveSeconds="0"
            overflowToDisk="false"
            statistics="true">

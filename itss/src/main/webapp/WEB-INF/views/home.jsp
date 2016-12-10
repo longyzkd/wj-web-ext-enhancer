@@ -14,9 +14,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 <head>
 	<title></title>
 	<jsp:include page="_LayoutCommonExtJS.jsp"/>
+	
+	
 	<script type="text/javascript">
     Ext.require(['*']);
 
+    
     Ext.onReady(function () {    
     	
         Ext.QuickTips.init();
@@ -186,6 +189,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
         //建立Tab页面(id：菜单项ID，text：菜单名称，href：链接地址)
         function CreateTab(id, text, href) {
+
+           
             var tabId = 'tab' + id;
             var tab = frmCenter.getComponent(tabId);
             if (!tab) {

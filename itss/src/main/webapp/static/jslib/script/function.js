@@ -265,6 +265,7 @@ var isRelease = function(){
 
 
 function ShowWindow(storeChannel, title, url, x, y) {
+	
     var winTitle = title;
     var win = parent;
     homeWindow = win.Ext.getCmp('homeWindow');

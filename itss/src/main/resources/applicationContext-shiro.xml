@@ -1,49 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-4.0.xsd"
 	default-lazy-init="true">
 
 	<description>Shiro安全配置</description>
 
+
+    <!-- 加载配置属性文件 -->
+	<context:property-placeholder ignore-unresolvable="true" location="classpath:itss.properties" />
+	
+    <!-- 缓存管理器 -->
+  	<bean id="shiroCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManager" ref="ehcacheManager"/>
+<!-- 		<property name="cacheManager" ref="springCacheManager"/> -->
+	</bean>
+
+    <!-- 凭证匹配器 -->
+    <bean id="credentialsMatcher" class="com.kingen.shiro.credentials.RetryLimitHashedCredentialsMatcher">
+        <constructor-arg ref="shiroCacheManager"/>
+        <property name="hashAlgorithmName" value="${shiro.hash.algorithm}"/>
+        <property name="hashIterations" value="${shiro.hash.interations}"/>
+        <property name="storedCredentialsHexEncoded" value="true"/>
+    </bean>
+    
+    
+  	<!-- Realm实现 -->
+    <bean id="shiroDbRealm" class="com.kingen.shiro.realm.ShiroDbRealm">
+        <property name="credentialsMatcher" ref="credentialsMatcher"/>
+        <property name="cachingEnabled" value="false"/>
+		<property name="authenticationCachingEnabled" value="true"/><!-- 启用身份验证缓存，即缓存AuthenticationInfo信息，默认false -->
+		<property name="authenticationCacheName" value="authenticationCache"/><!-- 缓存AuthenticationInfo信息的缓存名称 -->
+		<property name="authorizationCachingEnabled" value="true"/><!-- 启用授权缓存，即缓存AuthorizationInfo信息，默认false -->
+		<property name="authorizationCacheName" value="authorizationCache"/><!-- 缓存AuthorizationInfo信息的缓存名称 -->
+    </bean>
+
+  <!-- 会话ID生成器 -->
+    <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/>
+
+    <!-- 会话Cookie模板 -->
+   	<!-- 指定本系统SESSIONID, 默认为: JSESSIONID 问题: 与SERVLET容器名冲突, 如JETTY, TOMCAT 等默认JSESSIONID,
+	当跳出SHIRO SERVLET时如ERROR-PAGE容器会为JSESSIONID重新分配值导致登录会话丢失! -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+<!--         <constructor-arg value="sid"/> -->
+        <constructor-arg name="name" value="itss.session.id"/>
+        <property name="httpOnly" value="true"/><!-- 有助于减少跨站点脚本攻击 -->
+        <property name="maxAge" value="-1"/><!-- 关闭浏览器时过期cookie -->
+    </bean>
+
+
+	<!-- 会话DAO 用于会话的CRUD-->
+	<!-- 自定义Session存储容器 -->
+    <bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+    	<!-- 设置Session缓存名字，默认就是shiro-activeSessionCache -->
+        <property name="sessionIdGenerator" ref="sessionIdGenerator"/>
+        <property name="activeSessionsCacheName" value="shiro-activeSessionCache"/>
+    </bean>
+
+
+    <!-- 会话管理器 -->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="globalSessionTimeout" value="${session.sessionTimeout}"/> <!-- 设置全局会话超时时间 半小时 -->
+        <property name="deleteInvalidSessions" value="true"/> <!-- 删除过期的会话 -->
+        
+		<!-- 定时清理失效会话, 清理用户直接关闭浏览器造成的孤立会话   -->
+		<property name="sessionValidationInterval" value="${session.sessionTimeoutClean}"/>
+<!--  		<property name="sessionValidationSchedulerEnabled" value="false"/> -->
+ 		<property name="sessionValidationSchedulerEnabled" value="true"/>
+
+        <property name="sessionDAO" ref="sessionDAO"/>
+        <!-- 是否启用Session Id Cookie,默认是启动；如果是禁用则默认使用servlet容器的 JSESSIONID -->
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    </bean>
+    
+    
 	<!-- Shiro's main business-tier object for web-enabled applications -->
 	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
 		<property name="realm" ref="shiroDbRealm" />
 <!-- 		<property name="cacheManager" ref="shiroEhcacheManager" /> -->
+ 		<property name="sessionManager" ref="sessionManager"/>
+		<property name="cacheManager" ref="shiroCacheManager"/>
 	</bean>
 
 	<!-- 項目自定义的Realm, 所有accountService依赖的dao都需要用depends-on声明 -->
-	<bean id="shiroDbRealm" class="com.kingen.service.account.ShiroDbRealm">
-		<property name="accountService" ref="accountService"/>
-	</bean>
+<!-- 	<bean id="shiroDbRealm" class="com.kingen.service.account.ShiroDbRealm"> -->
+<!-- 		<property name="accountService" ref="accountService"/> -->
+<!-- 	</bean> -->
 	
-	<!-- Shiro Filter -->
-	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
-		<property name="securityManager" ref="securityManager" />
-		<property name="loginUrl" value="/login" /> <!-- get请求为页面 -->
-<!-- 		<property name="successUrl" value="/login/welcome" />  --><!-- ajax用不到这个 -->
-<!-- 		<property name="successUrl" value="/" />  -->
-		
-		 <!-- 自定义filter配置 -->  
-        <property name="filters">  
-            <map>  
-                <!-- 将自定义 的FormAuthenticationFilter注入shiroFilter中 -->  
-                <entry key="authc" value-ref="formAuthenticationFilter" />  
-            </map>  
-        </property>  
-        
-		<property name="filterChainDefinitions">
-			<value>
-				/login = authc <!-- post请求为submit -->
-				/logout = logout
-				/static/** = anon
-				/api/** = anon
-				/register/** = anon
-				/admin/** = roles[admin]
-				/data/** = anon  <!-- mobile 不在后台过滤 -->
-				/** = authc
-			</value>
-		</property>
-	</bean>
+	
 	
 	<!-- 用户授权信息Cache, 采用EhCache -->
 <!-- 	<bean id="shiroEhcacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager"> -->
@@ -56,10 +103,54 @@
 	
     <!-- 自定义form认证过虑器 -->  
     <!-- 基于Form表单的身份验证过滤器，不配置将也会注册此过虑器，表单中的用户账号、密码及loginurl将采用默认值，建议配置 -->  
-    <bean id="formAuthenticationFilter" class="com.kingen.service.account.CustomFormAuthenticationFilter  ">  
+    <bean id="formAuthenticationFilter" class="com.kingen.shiro.filter.CustomFormAuthenticationFilter  ">  
         <!-- 表单中账号的input名称 -->  
         <property name="usernameParam" value="username" />  
         <!-- 表单中密码的input名称 -->  
         <property name="passwordParam" value="password" />  
     </bean>  
+    
+    <!-- 并发登录控制 -->
+	<bean id="kickoutSessionControlFilter" class="com.kingen.shiro.filter.KickoutSessionControlFilter">
+        <property name="cacheManager" ref="shiroCacheManager"/>		<!-- 用于保存用户—会话之间的关系的 -->
+        <property name="sessionManager" ref="sessionManager"/>	<!-- 用于根据会话ID，获取会话进行踢出操作的 -->
+        <property name="kickoutAfter" value="false"/>			<!-- 是否踢出后来登录的，默认是false；即后者登录的用户踢出前者登录的用户 -->
+        <property name="maxSession" value="1"/>					<!-- 比如 2 的意思是同一个用户允许最多同时两个人登录 -->
+        <property name="kickoutUrl" value="/login?kickout=1"/>	<!-- 被踢出后重定向到的地址 -->
+    </bean>
+
+    <bean id="forceLogoutFilter" class="com.kingen.shiro.filter.ForceLogoutFilter"/>
+    
+    
+    <!-- Shiro Filter -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="/login" /> <!-- get请求为页面 -->
+<!-- 		<property name="successUrl" value="/login/welcome" />  --><!-- ajax用不到这个 -->
+<!-- 		<property name="successUrl" value="/" />  -->
+		
+		 <!-- 自定义filter配置 -->  
+        <property name="filters">  
+            <map>  
+                <!-- 将自定义 的FormAuthenticationFilter注入shiroFilter中 -->  
+                <entry key="authc" value-ref="formAuthenticationFilter" />  
+                 <entry key="kickout" value-ref="kickoutSessionControlFilter"/>
+                 <entry key="forceLogout" value-ref="forceLogoutFilter"/>
+<!--                   <entry key="jCaptchaValidate" value-ref="jCaptchaValidateFilter"/> -->
+            </map>  
+        </property>  
+        
+		<property name="filterChainDefinitions">
+			<value>
+				/login = authc <!-- post请求为submit -->
+				/logout = logout
+				/static/** = anon
+				/api/** = anon
+				/register/** = anon
+				/admin/** = roles[admin]
+				/mobile/** = anon  <!-- mobile 不在后台过滤 -->
+				/** = authc,forceLogout,kickout
+			</value>
+		</property>
+	</bean>
 </beans>

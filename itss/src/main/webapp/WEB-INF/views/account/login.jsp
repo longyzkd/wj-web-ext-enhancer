@@ -13,8 +13,17 @@
 <head>
 	<title>用户登录</title>
 	<jsp:include page="../_LayoutCommonExtJS.jsp"/>
-	<script type="text/javascript">
 	
+	<script type="text/javascript">
+	//判断当前窗口是否有顶级窗口，如果有就让当前的窗口的地址栏发生变化， //这样就可以让登陆窗口显示在整个窗口了 
+	function loadTopWindow(){
+		 if (window.top!=null && window.top.document.URL!=document.URL){ 
+			 	window.top.location= document.URL; 
+		}
+	} 
+	</script>
+	
+	<script type="text/javascript">
 	
 	
 	
@@ -26,6 +35,17 @@
     ]);   
 
     Ext.onReady(function () {
+    	loadTopWindow();
+
+    	/*
+    	 Ext.Msg.show({
+             title: '失败',
+             msg: '${msg}',
+             buttons: Ext.Msg.CANCEL,
+             icon: Ext.Msg.WARN
+         });
+*/
+        
         var txtUserId = Ext.create('Ext.form.field.Text', {
             id: 'txtUserId',
             fieldLabel: '帐号',
@@ -166,13 +186,6 @@
 </script>
 </head>
 <body style="background: #d7f1fe url('<%=path%>/static/style/image/LoginBg.jpg') repeat-x">
-        <%
-		String error = (String) request.getAttribute(FormAuthenticationFilter.DEFAULT_ERROR_KEY_ATTRIBUTE_NAME);
-		if(error != null){
-		%>
-				登录失败，请重试.
-		<%
-		}
-		%>
+       <span style="color:red; height: 30px;">${msg}</span>
 </body>
 </html>

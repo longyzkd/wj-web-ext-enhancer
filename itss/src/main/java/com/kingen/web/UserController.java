@@ -2,6 +2,7 @@ package com.kingen.web;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,15 +11,19 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kingen.aop.ControllerLogAnnotation;
@@ -26,6 +31,7 @@ import com.kingen.bean.Menu;
 import com.kingen.bean.MenuData;
 import com.kingen.bean.User;
 import com.kingen.service.account.AccountService;
+import com.kingen.util.Constants;
 import com.kingen.util.Json;
 import com.kingen.util.JsonResultBuilder;
 import com.kingen.util.Page;
@@ -46,13 +52,13 @@ public class UserController extends CommonController{
 	@Autowired
 	private AccountService service;
 
-	
+	@Autowired
+    private SessionDAO sessionDao;
 	
 	
 	@RequestMapping(value="/")
 	@ControllerLogAnnotation(moduleName="用户管理",option="查看")
 	@RequiresPermissions("user:view")
-	
 	public String execute(HttpServletResponse response) throws Exception{
 //		try{
 //			service.testException();
@@ -63,6 +69,28 @@ public class UserController extends CommonController{
 		return "account/tmanageruser"; 
 	}
 	
+//	@RequiresPermissions("admin:*")
+	@RequestMapping(value = "/listSession")
+    public String list(Model model) {
+        Collection<Session> sessions =  sessionDao.getActiveSessions();
+        model.addAttribute("sessions", sessions);
+        model.addAttribute("sessionCount", sessions.size());
+        return "user/list_session";
+    }
+
+	@RequiresPermissions("admin:session:forceLogout")
+    @RequestMapping("/{sessionId}/forceLogout")
+    public String forceLogout(
+            @PathVariable("sessionId") String sessionId, RedirectAttributes redirectAttributes) {
+        try {
+            Session session = sessionDao.readSession(sessionId);
+            if(session != null) {
+                session.setAttribute(Constants.SESSION_FORCE_LOGOUT_KEY, Boolean.TRUE);
+            }
+        } catch (Exception e) {/*ignore*/}
+        redirectAttributes.addFlashAttribute("msg", "强制退出成功！");
+        return "redirect:/userAction/listSession";
+    }
 	
 	
 	/**

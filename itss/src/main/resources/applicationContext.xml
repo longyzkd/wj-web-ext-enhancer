@@ -71,7 +71,9 @@
 	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 	
     <!-- 启用缓存注解功能(请将其配置在Spring主配置文件中) -->
+<!-- 	<cache:annotation-driven cache-manager="ehcacheManager" mode="proxy" /> -->
 	<cache:annotation-driven cache-manager="springCacheManager" mode="proxy" />
+
 <!--     <import resource="classpath:applicationCotext-cache.xml"/> -->
     
     

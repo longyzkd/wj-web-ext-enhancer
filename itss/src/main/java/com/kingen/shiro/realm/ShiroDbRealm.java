@@ -3,14 +3,13 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *******************************************************************************/
-package com.kingen.service.account;
+package com.kingen.shiro.realm;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -26,11 +25,12 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kingen.bean.Menu;
 import com.kingen.bean.User;
+import com.kingen.service.account.AccountService;
+import com.kingen.shiro.credentials.RetryLimitHashedCredentialsMatcher;
 import com.kingen.util.Encodes;
 
 /**
@@ -64,6 +64,7 @@ public class ShiroDbRealm extends AuthorizingRealm {
 		if (user != null) {
 			
 			byte[] salt = Encodes.decodeHex(user.getSalt());//16进制的
+			//user 可以自定义一个principal类
 			return new SimpleAuthenticationInfo(user,
 					user.getPassword(), ByteSource.Util.bytes(salt), getName());
 			
@@ -76,14 +77,17 @@ public class ShiroDbRealm extends AuthorizingRealm {
 	/**
 	 * 设定Password校验的Hash算法与迭代次数.
 	 */
+	//在XML配置
+	/*
 	@PostConstruct
 	public void initCredentialsMatcher() {
+//		RetryLimitHashedCredentialsMatcher  matcher = new RetryLimitHashedCredentialsMatcher(AccountService.HASH_ALGORITHM);
 		HashedCredentialsMatcher matcher = new HashedCredentialsMatcher(AccountService.HASH_ALGORITHM);
 		matcher.setHashIterations(AccountService.HASH_INTERATIONS);
 		setCredentialsMatcher(matcher);
 		
 	}
-	
+	*/
 	
 
 	/**

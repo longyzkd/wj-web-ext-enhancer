@@ -1,4 +1,4 @@
-package com.kingen.service.account;
+package com.kingen.shiro.filter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -134,9 +134,16 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
                 out.println("{success:false,msg:'账号不存在'}");  
             } else if ("LockedAccountException".equals(msg)) {  
                 out.println("{success:false,msg:'账号被锁定'}");  
+            }else if ("ExcessiveAttemptsException".equals(msg)) {  
+                out.println("{success:false,msg:'登录失败次数过多，请稍后再试！'}");  
+            }else if ("jCaptcha.error".equals(msg)) {  
+                out.println("{success:false,msg:'验证码错误！'}");  
             } else {  
                 out.println("{success:false,msg:'未知错误'}");  
             }  
+            
+         
+            
             out.flush();  
             out.close();  
         } catch (IOException e1) {  

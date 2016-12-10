@@ -11,6 +11,8 @@ public class Constants {
 	
 	public static final String STATUS="status";	
 	
+	/***************** session key *****************/
+	public static final String SESSION_FORCE_LOGOUT_KEY = "session.force.logout";
 	
 	public enum UserStatusEnum	{  
 		/**
