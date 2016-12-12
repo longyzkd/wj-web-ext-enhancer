@@ -9,17 +9,20 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.support.DefaultSubjectContext;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kingen.bean.User;
 import com.kingen.bean.workflow.ActivitiAware;
 import com.kingen.util.workflow.ProcessDefinitionCache;
 
 /**
  * 将activiti用到的一些bean转为 MAP，防止 序列化activiti bean时候
  * ，报错"Context.getCommandContext() returning null "
- * 
+ * (这种情况多出现于EXT的STORE JSON环境下)
  * @author wj
  *
  */
@@ -290,6 +293,42 @@ public class ActivitiUtils {
 		
 		return m;
 	
+		
+	}
+	
+	/**
+	 * 区分于Activiti
+	 * @author f
+	 *
+	 */
+	public static class MapSetter{
+		
+		
+		public static Map<String,Object> mapSetterSession(Session s) {
+			
+			if (s == null)
+				return null;
+			
+			Map<String,Object> m = Maps.newHashMap();
+			m.put("id", s.getId());
+			m.put("host", s.getHost());
+			m.put("lastAccessTime", s.getLastAccessTime());
+			m.put("userName", principal(s).getUsername());
+			m.put("forced", isForceLogout(s));
+			
+			return m;
+		}
+		
+		  public static User principal(Session session) {
+		        PrincipalCollection principalCollection =
+		                (PrincipalCollection) session.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
+
+		        return (User)principalCollection.getPrimaryPrincipal();
+//		        return (String)principalCollection.getPrimaryPrincipal();
+		    }
+		  public static boolean isForceLogout(Session session) {
+		        return session.getAttribute(Constants.SESSION_FORCE_LOGOUT_KEY) != null;
+		    }
 		
 	}
 

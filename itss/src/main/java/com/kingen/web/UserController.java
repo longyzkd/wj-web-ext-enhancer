@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,24 +14,31 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.kingen.aop.ControllerLogAnnotation;
 import com.kingen.bean.Menu;
 import com.kingen.bean.MenuData;
 import com.kingen.bean.User;
 import com.kingen.service.account.AccountService;
+import com.kingen.util.ActivitiUtils;
 import com.kingen.util.Constants;
 import com.kingen.util.Json;
 import com.kingen.util.JsonResultBuilder;
@@ -69,18 +77,33 @@ public class UserController extends CommonController{
 		return "account/tmanageruser"; 
 	}
 	
-//	@RequiresPermissions("admin:*")
+	@RequiresPermissions("session:view")
 	@RequestMapping(value = "/listSession")
+	@ControllerLogAnnotation(moduleName="在线用户管理",option="查看")
     public String list(Model model) {
-        Collection<Session> sessions =  sessionDao.getActiveSessions();
-        model.addAttribute("sessions", sessions);
-        model.addAttribute("sessionCount", sessions.size());
-        return "user/list_session";
+       
+        return "account/session-list";
     }
+	@RequestMapping(value = "/listSession/data")
+	public void listSessionData(User user,HttpServletResponse response) {
+		Collection<Session> sessions =  sessionDao.getActiveSessions();
+//		model.addAttribute("sessions", sessions);
+//		model.addAttribute("sessionCount", sessions.size());
+		
+		List<Map<String,Object>> result = Lists.newArrayList();
+		if(!CollectionUtils.isEmpty(sessions)){
+			for(Session s : sessions){
+				Map<String,Object> m = ActivitiUtils.MapSetter.mapSetterSession(s);
+				result.add(m);
+			}
+			
+		}
+		writeJson(response,result);
+	}
 
-	@RequiresPermissions("admin:session:forceLogout")
     @RequestMapping("/{sessionId}/forceLogout")
-    public String forceLogout(
+    @ControllerLogAnnotation(moduleName="在线用户管理",option="强制退出")
+    public @ResponseBody JSONObject forceLogout(
             @PathVariable("sessionId") String sessionId, RedirectAttributes redirectAttributes) {
         try {
             Session session = sessionDao.readSession(sessionId);
@@ -88,8 +111,10 @@ public class UserController extends CommonController{
                 session.setAttribute(Constants.SESSION_FORCE_LOGOUT_KEY, Boolean.TRUE);
             }
         } catch (Exception e) {/*ignore*/}
-        redirectAttributes.addFlashAttribute("msg", "强制退出成功！");
-        return "redirect:/userAction/listSession";
+//        redirectAttributes.addFlashAttribute("msg", "强制退出成功！");
+        JSONObject json = JsonResultBuilder.success(true).msg("强制退出成功！").json();
+        return json;
+//        return "redirect:/userAction/listSession";
     }
 	
 	
@@ -367,6 +392,9 @@ public class UserController extends CommonController{
 		}
 		return menuDatas;
 	}
+	
+	
+	
 	
 }
 

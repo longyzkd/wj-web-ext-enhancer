@@ -31,7 +31,7 @@ public class ForceLogoutFilter extends AccessControlFilter {
             getSubject(request, response).logout();//强制退出
         } catch (Exception e) {/*ignore exception*/}
 
-        String loginUrl = getLoginUrl() + (getLoginUrl().contains("?") ? "&" : "?") + "forceLogout=1";
+        String loginUrl = getLoginUrl() + (getLoginUrl().contains("?") ? "&" : "?") + "forceLogout=1"; //loginController要获取参数展示信息到页面
         WebUtils.issueRedirect(request, response, loginUrl);
         return false;
     }

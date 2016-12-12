@@ -67,6 +67,17 @@
             x: 515,
             y: 300
         });
+        var txtValidateCode = Ext.create('Ext.form.field.Text', {
+            fieldLabel: '验证码',
+            width: 220,
+            labelWidth: 40,
+            allowBlank: false,
+            maxLength: 20,
+            x: 515,
+            y: 340
+        });
+
+
         
         
             
@@ -81,7 +92,7 @@
         var btnLogin = Ext.create('Ext.button.Button', {
             text: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;登&nbsp;&nbsp;录&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
             x: 540,
-            y: 350,
+            y: 390,
             listeners: {
                 click: login
             }
@@ -99,7 +110,7 @@
         var btnReset = Ext.create('Ext.button.Button', {
             text: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;重&nbsp;&nbsp;置&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
             x: 630,
-            y: 350,
+            y: 390,
             listeners: {
                 click: {
                     fn: function () {
@@ -128,7 +139,10 @@
             minWidth: 800,
             height: 620,
             tools: [{ type: 'pin' }],
-            items: [txtUserId, txtPassword, btnLogin,btnReset]
+            items: [txtUserId, txtPassword,
+            	txtValidateCode,
+
+              btnLogin,btnReset]
         });
         win.show();
 
