@@ -204,6 +204,11 @@
 			<version>1.9</version>
 		</dependency>
 
+<!-- 	<dependency> -->
+<!-- 	    <groupId>com.octo.captcha</groupId> -->
+<!-- 	    <artifactId>jcaptcha-all</artifactId> -->
+<!-- 	    <version>1.0-RC6</version> -->
+<!-- 	</dependency> -->
 		<!-- SECURITY end -->
 		
 		<!-- poi office -->

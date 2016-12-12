@@ -12,6 +12,12 @@
 <html>
 <head>
 	<title>用户登录</title>
+	<style type="text/css">
+	
+	    #CheckCode{ float:left;}  
+   	   .x-form-code{width:75px;height:25px;vertical-align:middle;cursor:pointer; float:left; margin-left:7px;}  
+	
+	</style>
 	<jsp:include page="../_LayoutCommonExtJS.jsp"/>
 	
 	<script type="text/javascript">
@@ -25,6 +31,30 @@
 	
 	<script type="text/javascript">
 	
+	//定义验证码控件  
+	Ext.define('CheckCode',{  
+	    extend: 'Ext.form.field.Text',   
+	    alias: 'widget.checkcode',  
+	    inputTyle:'codefield',  
+	    codeUrl:Ext.BLANK_IMAGE_URL,  
+	    isLoader:true,  
+	    onRender:function(ct,position){  
+	        this.callParent(arguments);  
+	        this.codeEl = ct.createChild({ tag: 'img', src: Ext.BLANK_IMAGE_URL});  
+	        this.codeEl.addCls('x-form-code');  
+	        this.codeEl.on('click', this.loadCodeImg, this);  
+	          
+	        if (this.isLoader) this.loadCodeImg();  
+	    },  
+	    alignErrorIcon: function() {  
+	        this.errorIcon.alignTo(this.codeEl, 'tl-tr', [2, 0]);  
+	    },  
+	    //如果浏览器发现url不变，就认为图片没有改变，就会使用缓存中的图片，而不是重新向服务器请求，所以需要加一个参数，改变url  
+	    loadCodeImg: function() {  
+	        this.codeEl.set({ src: this.codeUrl + '?id=' + Math.random() });  
+	    }  
+	});  
+
 	
 	
     Ext.require([
@@ -37,6 +67,25 @@
     Ext.onReady(function () {
     	loadTopWindow();
 
+    	var checkcode = Ext.create('CheckCode',{  
+            cls : 'key',  
+            fieldLabel : '验证码',  
+            name : 'jcaptchaCode',  
+            id : 'CheckCode',  
+            allowBlank : false,  
+            isLoader:true,  
+            blankText : '验证码不能为空',  
+            codeUrl: basepath+'/jcaptcha.jpg',  
+            width: 150,
+            labelWidth: 50,
+            x: 515,
+            y: 340
+        });  
+    	
+
+
+
+    	
     	/*
     	 Ext.Msg.show({
              title: '失败',
@@ -50,7 +99,7 @@
             id: 'txtUserId',
             fieldLabel: '帐号',
             width: 220,
-            labelWidth: 40,
+            labelWidth: 50,
             maxLength: 20,
             allowBlank: false,
             x: 515,
@@ -60,7 +109,7 @@
         var txtPassword = Ext.create('Ext.form.field.Text', {
             fieldLabel: '密码',
             width: 220,
-            labelWidth: 40,
+            labelWidth: 50,
             allowBlank: false,
             maxLength: 20,
             inputType: 'password',
@@ -70,7 +119,7 @@
         var txtValidateCode = Ext.create('Ext.form.field.Text', {
             fieldLabel: '验证码',
             width: 220,
-            labelWidth: 40,
+            labelWidth: 50,
             allowBlank: false,
             maxLength: 20,
             x: 515,
@@ -140,7 +189,7 @@
             height: 620,
             tools: [{ type: 'pin' }],
             items: [txtUserId, txtPassword,
-            	txtValidateCode,
+            	checkcode,
 
               btnLogin,btnReset]
         });

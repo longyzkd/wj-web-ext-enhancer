@@ -121,6 +121,12 @@
 
     <bean id="forceLogoutFilter" class="com.kingen.shiro.filter.ForceLogoutFilter"/>
     
+    <!-- 验证码 -->
+    <bean id="jCaptchaValidateFilter" class="com.kingen.shiro.jcaptcha.JCaptchaValidateFilter">
+        <property name="jcaptchaEbabled" value="true"/>			<!-- 开启验证码支持 -->
+        <property name="jcaptchaParam" value="jcaptchaCode"/>	<!-- 前台提交的验证码参数名 -->
+        <property name="failureKeyAttribute" value="shiroLoginFailure"/>	<!-- 验证码验证失败后存储到的属性名 -->
+    </bean>
     
     <!-- Shiro Filter -->
 	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
@@ -136,17 +142,18 @@
                 <entry key="authc" value-ref="formAuthenticationFilter" />  
                  <entry key="kickout" value-ref="kickoutSessionControlFilter"/>
                  <entry key="forceLogout" value-ref="forceLogoutFilter"/>
-<!--                   <entry key="jCaptchaValidate" value-ref="jCaptchaValidateFilter"/> -->
+                  <entry key="jCaptchaValidate" value-ref="jCaptchaValidateFilter"/>
             </map>  
         </property>  
         
 		<property name="filterChainDefinitions">
 			<value>
-				/login = authc <!-- post请求为submit -->
+				/login = jCaptchaValidate,authc <!-- post请求为submit -->
 				/logout = logout
 				/static/** = anon
 				/api/** = anon
 				/register/** = anon
+				/jcaptcha* = anon
 				/admin/** = roles[admin]
 				/mobile/** = anon  <!-- mobile 不在后台过滤 -->
 				/** = authc,forceLogout,kickout
