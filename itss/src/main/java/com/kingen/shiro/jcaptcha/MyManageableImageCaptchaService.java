@@ -4,7 +4,7 @@ import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
 
 /**
  * 提供了判断仓库中是否有相应的验证码存在
- * @author zml
+ * @author 
  *
  */
 public class MyManageableImageCaptchaService extends DefaultManageableImageCaptchaService {

@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * 提供相应的API来验证当前请求输入的验证码是否正确
- * @author zml
+ * @author 
  *
  */
 public class JCaptcha {

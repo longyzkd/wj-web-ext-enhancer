@@ -9,7 +9,7 @@ import org.apache.shiro.web.util.WebUtils;
 
 /**
  * 用于验证码验证的Shiro 过滤器
- * @author zml
+ * @author 
  *
  */
 public class JCaptchaValidateFilter extends AccessControlFilter {
