@@ -8,7 +8,7 @@
 		6、输错密码3次，锁定1分钟
 		7、验证码输错后，要手动刷新验证码，因为是AJAX提交。可以看http://blog.csdn.net/sanlai116/article/details/12688825
 		
-		
+		8、提供两种风格的验证码：GMailEngine（gmail风格）、ImageCaptchaEngine（加干扰线的）
 		
 		
 		
@@ -19,3 +19,4 @@
 							  ②JCaptchaValidateFilter里面的onAccessDenied；
 							  ③KickoutSessionControlFilter里面的onAccessDenied，ForceLogoutFilter里面的onAccessDenied。
 		①、 ②是写json到response	，③ request的paramter，在loginController获取再在页面用${}获取出错信息
+	

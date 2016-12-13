@@ -41,9 +41,9 @@
 	// 图片和输入框之间的距离
 	imgMargin : 5,
 	// 图片的宽度
-	imgWidth : 75,
+	imgWidth : 105,
 	// 图片的高度
-	imgHeight : 23,
+	imgHeight : 33,
 	// 点击图片的时候是否清空输入框
 	clearOnClick : true,
 	// 临时的FieldBody样式
@@ -164,6 +164,8 @@
     		y : 340,
     		  width: 250,
               labelWidth: 50
+           //   height:33
+              
     	});
 
 

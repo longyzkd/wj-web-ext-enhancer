@@ -29,7 +29,15 @@ public class JCaptchaFilter extends OncePerRequestFilter {
         response.setContentType("image/jpeg");
 
         String id = request.getRequestedSessionId();
-        BufferedImage bi = JCaptcha.captchaService.getImageChallengeForID(id);
+        
+        //GMAIL风格的图片
+//        BufferedImage bi = JCaptcha.captchaService.getImageChallengeForID(id);
+        
+        //复杂的图片
+        BufferedImage bi=   CaptchaService.getInstance().getImageChallengeForID(id,request.getLocale());  
+        					
+        		
+
 
         ServletOutputStream out = response.getOutputStream();
 

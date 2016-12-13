@@ -7,6 +7,7 @@ import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
  * @author 
  *
  */
+//没什么用，不如直接用DefaultManageableImageCaptchaService
 public class MyManageableImageCaptchaService extends DefaultManageableImageCaptchaService {
 
     public MyManageableImageCaptchaService(com.octo.captcha.service.captchastore.CaptchaStore captchaStore, com.octo.captcha.engine.CaptchaEngine captchaEngine, int minGuarantedStorageDelayInSeconds, int maxCaptchaStoreSize, int captchaStoreLoadBeforeGarbageCollection) {
