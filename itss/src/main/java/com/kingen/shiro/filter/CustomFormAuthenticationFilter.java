@@ -25,7 +25,12 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
      *  authc 身份认证失败时候  所有请求都会经过的方法。 
      */  
     @Override  
-    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {  
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception { 
+    	//当验证码验证失败时不再走身份认证拦截器
+    	  if(request.getAttribute(getFailureKeyAttribute()) != null) {
+              return true;
+          }
+    	  
     	 if (isLoginRequest(request, response)) {  
              if (isLoginSubmission(request, response)) {  
                  if (log.isTraceEnabled()) {  

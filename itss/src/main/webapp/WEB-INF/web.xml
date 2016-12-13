@@ -80,6 +80,7 @@
 	</filter-mapping>
 	
 	<!-- 验证码过滤器需要放到Shiro之后 因为Shiro将包装HttpSession 如果不，可能造成两次的sesison id 不一样 -->
+	<!-- 用来生成图片的 -->
     <filter>
         <filter-name>JCaptchaFilter</filter-name>
         <filter-class>com.kingen.shiro.jcaptcha.JCaptchaFilter</filter-class>

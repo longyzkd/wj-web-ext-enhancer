@@ -199,15 +199,6 @@
             x: 515,
             y: 300
         });
-        var txtValidateCode = Ext.create('Ext.form.field.Text', {
-            fieldLabel: '验证码',
-            width: 220,
-            labelWidth: 50,
-            allowBlank: false,
-            maxLength: 20,
-            x: 515,
-            y: 340
-        });
 
 
         
