@@ -4,7 +4,6 @@
 		1、controller方法上面 加入or 权限，只要是admin角色都可以通过，从而把admin用户在界面上彻底消失  *
 		2、没有权限时候，AJAX请求返回JSON
 		3、流程单子上面 过往comment列表的展示    *
-		4、强制踢出用户
-		5、验证码
+	
 		6、remember me 
 		

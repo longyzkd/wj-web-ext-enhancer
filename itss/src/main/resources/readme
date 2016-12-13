@@ -14,3 +14,7 @@
 开发：
 		1、日期在前台JS用simpleDate()转格式   //Sat Mar 06 00:00:00 CST 2010 
 		（无法用fmt标签，也不是json，在EL里取日期，只能用JS转格式。前台入参过来的，都通过spring mvc绑定日期，并格式化.PS只是格式化，Date的toString还是那种不友好的格式，在前台获取还是不友好的格式）
+		2、登录出错信息写在三个地方：①authc里面的onLoginFailure，
+							  ②JCaptchaValidateFilter里面的onAccessDenied；
+							  ③KickoutSessionControlFilter里面的onAccessDenied，ForceLogoutFilter里面的onAccessDenied。
+		①、 ②是写json到response	，③ request的paramter，在loginController获取再在页面用${}获取出错信息
