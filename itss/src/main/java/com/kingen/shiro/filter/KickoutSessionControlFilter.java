@@ -114,7 +114,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
             } catch (Exception e) { //ignore
             }
             saveRequest(request);
-            WebUtils.issueRedirect(request, response, kickoutUrl);
+            WebUtils.issueRedirect(request, response, kickoutUrl);///login?kickout=1
             return false;
         }
 

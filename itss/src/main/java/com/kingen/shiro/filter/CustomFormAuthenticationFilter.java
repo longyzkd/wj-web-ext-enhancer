@@ -132,13 +132,11 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
                 out.println("{success:false,msg:'密码错误'}");  
             } else if ("UnknownAccountException".equals(msg)) {  
                 out.println("{success:false,msg:'账号不存在'}");  
-            } else if ("LockedAccountException".equals(msg)) {  
+            } else if ("LockedAccountException".equals(msg)) {  //no use
                 out.println("{success:false,msg:'账号被锁定'}");  
             }else if ("ExcessiveAttemptsException".equals(msg)) {  
                 out.println("{success:false,msg:'登录失败次数过多，请稍后再试！'}");  
-            }else if ("jCaptcha.error".equals(msg)) {  
-                out.println("{success:false,msg:'验证码错误！'}");  
-            } else {  
+            }else {  
                 out.println("{success:false,msg:'未知错误'}");  
             }  
             

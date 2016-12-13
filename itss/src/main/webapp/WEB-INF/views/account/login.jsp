@@ -32,28 +32,97 @@
 	<script type="text/javascript">
 	
 	//定义验证码控件  
-	Ext.define('CheckCode',{  
-	    extend: 'Ext.form.field.Text',   
-	    alias: 'widget.checkcode',  
-	    inputTyle:'codefield',  
-	    codeUrl:Ext.BLANK_IMAGE_URL,  
-	    isLoader:true,  
-	    onRender:function(ct,position){  
-	        this.callParent(arguments);  
-	        this.codeEl = ct.createChild({ tag: 'img', src: Ext.BLANK_IMAGE_URL});  
-	        this.codeEl.addCls('x-form-code');  
-	        this.codeEl.on('click', this.loadCodeImg, this);  
-	          
-	        if (this.isLoader) this.loadCodeImg();  
-	    },  
-	    alignErrorIcon: function() {  
-	        this.errorIcon.alignTo(this.codeEl, 'tl-tr', [2, 0]);  
-	    },  
-	    //如果浏览器发现url不变，就认为图片没有改变，就会使用缓存中的图片，而不是重新向服务器请求，所以需要加一个参数，改变url  
-	    loadCodeImg: function() {  
-	        this.codeEl.set({ src: this.codeUrl + '?id=' + Math.random() });  
-	    }  
-	});  
+	Ext.define('fms.ux.VerifyCode', {
+
+	extend : 'Ext.form.field.Trigger',
+	alias : ['widget.verifycodefield', 'widget.verifycode'],
+	// 图片的URL地址
+	codeImgUrl : Ext.BLANK_IMAGE_URL,
+	// 图片和输入框之间的距离
+	imgMargin : 5,
+	// 图片的宽度
+	imgWidth : 75,
+	// 图片的高度
+	imgHeight : 23,
+	// 点击图片的时候是否清空输入框
+	clearOnClick : true,
+	// 临时的FieldBody样式
+	extraFieldBodyCls : Ext.baseCSSPrefix + 'form-file-wrap',
+	componentLayout : 'triggerfield',
+	childEls : ['imageWrap'],
+
+	onRender : function() {
+		var me = this, id = me.id, inputEl;
+
+		me.callParent(arguments);
+
+		inputEl = me.inputEl;
+
+		// name goes on the fileInput, not the text input
+		inputEl.dom.name = '';
+
+		// 将imgConfig对象拷贝给前一个参数，并覆盖
+		me.image = new Ext.Img(Ext.apply({
+			renderTo : id + '-imageWrap',
+			ownerCt : me,
+			ownerLayout : me.componentLayout,
+			id : id + '-img',
+			ui : me.ui,
+			src : me.codeImgUrl,
+			disabled : me.disabled,
+			width : me.imgWidth,
+			height : me.imgHeight,
+			style : me.getImgMarginProp() + me.imgMargin + 'px;cursor:pointer;',
+			inputName : me.getName(),
+			listeners : {
+				scope : me,
+				click : {
+					element : 'el',
+					fn : me.onImgClick
+				}
+			}
+		}, me.imgConfig));
+
+		// me.browseButtonWrap.dom.style.width =
+		// (me.browseButtonWrap.dom.lastChild.offsetWidth +
+		// me.button.getEl().getMargin('lr')) + 'px';
+
+		me.imageWrap.dom.style.width = (me.imgWidth + me.image.getEl()
+				.getMargin('lr'))
+				+ 'px';
+		if (Ext.isIE) {
+			me.image.getEl().repaint();
+		}
+	},
+
+	/**
+	 * Gets the markup to be inserted into the subTplMarkup.
+	 */
+	getTriggerMarkup : function() {
+		return '<td id="' + this.id + '-imageWrap"></td>';
+	},
+
+	onImgClick : function() {
+		// 重新定义图片地址
+		this.image.setSrc(this.codeImgUrl + '?time=' + new Date().getTime());
+		this.reset();
+	},
+	getImgMarginProp : function() {
+		return 'margin-left:';
+	},
+
+	setValue : Ext.emptyFn,
+
+	reset : function() {
+		var me = this, clear = me.clearOnClick;
+		if (me.rendered) {
+			if (clear) {
+				me.inputEl.dom.value = '';
+			}
+		}
+	}
+
+}); 
 
 	
 	
@@ -67,7 +136,9 @@
     Ext.onReady(function () {
     	loadTopWindow();
 
-    	var checkcode = Ext.create('CheckCode',{  
+    	var checkcode = 
+/*
+        	Ext.create('CheckCode',{  
             cls : 'key',  
             fieldLabel : '验证码',  
             name : 'jcaptchaCode',  
@@ -81,7 +152,19 @@
             x: 515,
             y: 340
         });  
-    	
+            */
+    	Ext.create('fms.ux.VerifyCode', {
+    		fieldLabel : '验证码',
+    		name : 'jcaptchaCode',
+    		id : 'verifycode',
+    		blankText : '验证码不能为空',
+    		codeImgUrl : basepath+'/jcaptcha.jpg',
+    		tabIndex : 3,
+    		x :515,
+    		y : 340,
+    		  width: 250,
+              labelWidth: 50
+    	});
 
 
 
@@ -207,7 +290,8 @@
                 method: 'post', //filter handle post request
                 params: {
                 	username: txtUserId.getValue(),
-                	password: txtPassword.getValue()
+                	password: txtPassword.getValue(),
+                	jcaptchaCode: checkcode.getValue()
                 },
                 dataType:'html',
                 loadMask: true,
