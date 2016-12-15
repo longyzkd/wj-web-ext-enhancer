@@ -26,13 +26,13 @@ public class Page<T> {
 	protected int page;// 当前页
 	protected int limit ;// 每页显示记录数
 	
-	private Integer total = 0;
+	private Integer total = 0; //总记录数
 	
 	private List<T> dataList = new ArrayList<T>();
 	
 	private Boolean success= true;
 
-	private String orderBy = ""; 
+	private String orderBy = ""; // 标准查询有效， 实例： updatedate desc, name asc
 	
 	
 	

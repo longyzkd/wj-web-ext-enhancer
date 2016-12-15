@@ -1,7 +1,9 @@
 package com.kingen.repository;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -9,20 +11,22 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.kingen.bean.User;
 import com.kingen.util.Page;
 import com.kingen.util.Reflections;
 
@@ -623,6 +627,63 @@ public   class CommonDao<T>  {
 	}
 	
 	
+	
+	
+	public List<T> findAll(){
+		return getCurrentSession().createCriteria(entityClass).list();
+	}
+	
+	
+	
+
+	/**
+	 * 使用检索标准对象分页查询
+	 * @param page
+	 * @param detachedCriteria
+	 * @return
+	 */
+	public Page<T> find(Page<T> page, DetachedCriteria detachedCriteria) {
+		return find(page, detachedCriteria, Criteria.DISTINCT_ROOT_ENTITY);
+	}
+	
+	/**
+	 * 使用检索标准对象分页查询
+	 * @param page
+	 * @param detachedCriteria
+	 * @param resultTransformer
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Page<T> find(Page<T> page, DetachedCriteria detachedCriteria, ResultTransformer resultTransformer) {
+		// get count
+		page.setTotal(Integer.valueOf(count(detachedCriteria)+""));
+		if (page.getTotal() < 1) {
+			return page;
+		}
+		Criteria criteria = detachedCriteria.getExecutableCriteria(getCurrentSession());
+		criteria.setResultTransformer(resultTransformer);
+		// set page
+	        criteria.setFirstResult(page.getFirstResult());
+	        criteria.setMaxResults(page.getLimit()); 
+		// order by
+		if (StringUtils.isNotBlank(page.getOrderBy())){ //column asc,column desc
+			for (String order : StringUtils.split(page.getOrderBy(), ",")){
+				String[] o = StringUtils.split(order, " ");
+				if (o.length==1){
+					criteria.addOrder(Order.asc(o[0]));
+				}else if (o.length==2){
+					if ("DESC".equals(o[1].toUpperCase())){
+						criteria.addOrder(Order.desc(o[0]));
+					}else{
+						criteria.addOrder(Order.asc(o[0]));
+					}
+				}
+			}
+		}
+		page.setDataList(criteria.list());
+		return page;
+	}
+
 	/**
 	 * 使用检索标准对象查询
 	 * @param detachedCriteria
@@ -631,7 +692,6 @@ public   class CommonDao<T>  {
 	public List<T> find(DetachedCriteria detachedCriteria) {
 		return find(detachedCriteria, Criteria.DISTINCT_ROOT_ENTITY);
 	}
-	
 	
 	/**
 	 * 使用检索标准对象查询
@@ -644,6 +704,50 @@ public   class CommonDao<T>  {
 		Criteria criteria = detachedCriteria.getExecutableCriteria(getCurrentSession());
 		criteria.setResultTransformer(resultTransformer);
 		return criteria.list(); 
+	}
+	
+	/**
+	 * 使用检索标准对象查询记录数
+	 * @param detachedCriteria
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public long count(DetachedCriteria detachedCriteria) {
+		Criteria criteria = detachedCriteria.getExecutableCriteria(getCurrentSession());
+		long totalCount = 0;
+		try {
+			// Get orders
+			Field field = CriteriaImpl.class.getDeclaredField("orderEntries");
+			field.setAccessible(true);
+			List orderEntrys = (List)field.get(criteria);
+			// Remove orders
+			field.set(criteria, new ArrayList());
+			// Get count
+			criteria.setProjection(Projections.rowCount());
+			totalCount = Long.valueOf(criteria.uniqueResult().toString());
+			// Clean count
+			criteria.setProjection(null);
+			// Restore orders
+			field.set(criteria, orderEntrys);
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return totalCount;
+	}
+	
+	/**
+	 * 创建与会话无关的检索标准对象
+	 * @param criterions Restrictions.eq("name", value);
+	 * @return 
+	 */
+	public DetachedCriteria createDetachedCriteria(Criterion... criterions) {
+		DetachedCriteria dc = DetachedCriteria.forClass(entityClass);
+		for (Criterion c : criterions) {
+			dc.add(c);
+		}
+		return dc;
 	}
 	
 	
