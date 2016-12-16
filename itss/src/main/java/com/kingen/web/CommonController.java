@@ -39,6 +39,8 @@ import com.kingen.bean.User;
 import com.kingen.util.DateUtils;
 import com.kingen.util.FastjsonFilter;
 
+import groovy.json.StringEscapeUtils;
+
 
 /**
  * 如果是get，需要修改 Tomcat根式目录的 conf/server.xml文件中，找<Connector port="8080" />，在里面加<Connector port="8080" uRIEncoding="utf-8" />
@@ -76,6 +78,7 @@ public abstract class CommonController {
 			public void setAsText(String text) {
 				setValue(text == null ? null : text.trim());
 //				setValue(text == null ? null : StringEscapeUtils.escapeHtml4(text.trim()));
+//				setValue(text == null ? null : StringEscapeUtils.escapeJavaScript(text.trim()));
 			}
 			@Override
 			public String getAsText() {

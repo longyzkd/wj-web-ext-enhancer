@@ -4,6 +4,12 @@ package com.kingen.util;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+/**
+ * 封装fastJson的链式编程,比如  JsonResultBuilder.success(true).msg("任务已签收").json();
+ * @author wj
+ * @date 2016-11-10
+ *
+ */
 public class JsonResultBuilder {
 
 	public static final String SUCCESS = "success";	
@@ -17,6 +23,8 @@ public class JsonResultBuilder {
 	
 	public static final String DATA = "data";
 
+	JSONObject jsonObject;
+	
 	
 	public String toString() {
 		return jsonObject.toString();
@@ -117,5 +125,5 @@ public class JsonResultBuilder {
 		return jsonObject;
 	}
 
-	JSONObject jsonObject;
+	
 }

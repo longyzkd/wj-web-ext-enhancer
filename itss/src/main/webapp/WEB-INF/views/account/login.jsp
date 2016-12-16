@@ -258,7 +258,7 @@
             },
             layout: 'absolute',
             closable: false,
-            html: '<img src="<%=path%>/static/style/image/Login.jpg">',
+           // html: '<img src="<%=path%>/static/style/image/Login.jpg">',
             closeAction: 'hide',
             width: 1011,
             minWidth: 800,

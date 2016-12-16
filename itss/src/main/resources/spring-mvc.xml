@@ -9,12 +9,43 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
+ <!-- 加载配置属性文件 -->
+	<context:property-placeholder ignore-unresolvable="true" location="classpath:itss.properties" />
+	
 	<!-- 自动扫描且只扫描@Controller -->
+	<!--开启controller注解支持,把标记了@Controller注解的类转换为bean -->    
+	<!-- 使用了 context:component-scan 标签 上面的 context:annotation-config 就不需要配置了 -->
+	<!-- 注：如果base-package=com.kingen 则注解事务不起作用 TODO 读源码 -->
+	<!-- 因为此处只应该加载表现层组件，如果此处还加载dao层或service层的bean会将之前容器加载的替换掉 -->
+	<!-- 而且此处不会进行AOP织入，所以会造成AOP失效问题（如事务不起作用） -->
 	<context:component-scan base-package="com.kingen.web" use-default-filters="false">
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
 	</context:component-scan>
 	
+	  <!-- 指定自己定义的validator -->
+    <mvc:annotation-driven validator="validator"/>
+    
+    <!-- 以下 validator  ConversionService 在使用 mvc:annotation-driven 会 自动注册-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        <!-- 如果不加默认到 使用classpath下的 ValidationMessages.properties -->
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+
+    <!-- 国际化的消息资源文件（本系统中主要用于显示/错误消息定制） -->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <!-- 在web环境中一定要定位到classpath 否则默认到当前web应用下找  -->
+<!--                 <value>classpath:message/messages</value> -->
+                <value>classpath:message/validationMessages</value><!-- 默认的错误消息文件 -->
+            </list>
+        </property>
+        <property name="useCodeAsDefaultMessage" value="false"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="cacheSeconds" value="60"/>
+    </bean>
 	
 	
 	<mvc:annotation-driven>
@@ -70,6 +101,16 @@
          <property name="defaultStatusCode" value="500"></property>  
      </bean>  
      
+     
+     <!-- 对静态资源文件的访问 -->  
+	<!-- 所有的页面引用到css/**的资源都从css/*里面进行查找 -->
+<!--     <mvc:resources mapping="/js/**" location="/WEB-INF/js/" cache-period="31556926"/>   -->
+<!--     <mvc:resources mapping="/css/**" location="/WEB-INF/css/" cache-period="31556926"/> -->
+<!-- 	<mvc:resources mapping="/images/**" location="/WEB-INF/images/" cache-period="31556926"/> -->
+<!-- 	<mvc:resources mapping="/modeler/**" location="/modeler/" cache-period="31556926"/> -->
+	
+	
+	
      <!-- controller @RequiresPermissions 需要 -->
 <!--     <aop:config proxy-target-class="true"></aop:config> --> <!-- 可以用aspectj ,不是必须的 -->
     <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
@@ -92,4 +133,10 @@
 <!-- 			<bean class="com.thinkgem.jeesite.modules.sys.interceptor.MobileInterceptor" /> -->
 <!-- 		</mvc:interceptor> -->
 <!-- 	</mvc:interceptors> -->
+
+
+	<!-- 上传文件拦截，设置最大上传文件大小   10M=10*1024*1024(B)=10485760 bytes -->  
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">  
+		<property name="maxUploadSize" value="${web.maxUploadSize}" />  
+	</bean>
 </beans>
