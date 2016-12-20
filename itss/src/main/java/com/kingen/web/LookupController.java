@@ -5,8 +5,10 @@
  *******************************************************************************/
 package com.kingen.web;
 
+import java.util.Arrays;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -17,17 +19,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kingen.aop.ControllerLogAnnotation;
-import com.kingen.bean.Log;
-import com.kingen.service.log.LogService;
-import com.kingen.util.Json;
+import com.kingen.bean.Lookup;
+import com.kingen.service.lookup.LookupService;
 import com.kingen.util.JsonResultBuilder;
 import com.kingen.util.Page;
-import com.kingen.util.StringUtils;
-import com.kingen.util.excel.ExportExcel;
 
 
 /**
@@ -43,20 +41,18 @@ public class LookupController extends CommonController{
 	
 
 	@Autowired
-	private LogService service;
+	private LookupService service;
 
-	
-	
 	
 	@RequestMapping(value="/{type}")
 	@ControllerLogAnnotation(moduleName="服务管理",option="事件分类管理")
 	@RequiresPermissions("eventCat:view")
-	public String execute(@PathVariable String type ,Model m,HttpServletResponse response) throws Exception{
+	public String execute(@PathVariable("type") String type ,Model m,HttpServletResponse response) throws Exception{
 		m.addAttribute("type", type);
 		if("eventCat".equals(type)){
 			
 			return "lookup/list"; 
-		}else if("priority".equals(type)){
+		}else if("priority".equals(type)){ //需要AOP
 			return priority(); 
 		}else if("faultLv".equals(type)){
 			return faultLv(); 
@@ -68,28 +64,32 @@ public class LookupController extends CommonController{
 	 * 查找分页后的grid
 	 */
 	@RequestMapping(value="/data/{type}")
-	public void data(@PathVariable String type ,Page<Log> page,HttpServletResponse response) {
-		page = service.getLogs(page,type);
+	public void data(@PathVariable("type") String type ,Page<Lookup> page,HttpServletResponse response) {
+		page = service.data(page,type);
 		writeJson(response,page);
 	}
 	
+	@RequestMapping(value="toEdit/{type}")
+	public String toEdit(@PathVariable("type") String type ,String id,String action,HttpServletResponse response,HttpServletRequest request,Model model){
+		model.addAttribute("type", type);
+		model.addAttribute("action", action);
+		model.addAttribute("id", id);//null的话 前台是空串
+		return "lookup/edit"; 
+	}
+	
+	@RequestMapping(value="/one")
+	public void one(String id, HttpServletResponse response) {
+		Lookup u  = service.unique(id);
+		writeJson(response,u);
+	}
 	
 	
 //	@RequestMapping(value="priority")
 	@ControllerLogAnnotation(moduleName="服务管理",option="优先级管理")
 	@RequiresPermissions("priority:view")
 	public String priority() throws Exception{
-		return "lookup/priority-list"; 
+		return "lookup/list"; 
 	}
-//	/**
-//	 * 查找分页后的grid
-//	 */
-//	@RequestMapping(value="priority/data")
-//	public void priorityData(Page<Log> page,Log vo,HttpServletResponse response) {
-//		page = service.getLogs(page,vo);
-//		writeJson(response,page);
-//	}
-//	
 	
 	
 	
@@ -97,43 +97,23 @@ public class LookupController extends CommonController{
 	@ControllerLogAnnotation(moduleName="服务管理",option="故障级别管理")
 	@RequiresPermissions("faultLv:view")
 	public String faultLv() throws Exception{
-		return "lookup/faultLv-list"; 
+		return "lookup/list"; 
 	}
-//	/**
-//	 * 查找分页后的grid
-//	 */
-//	@RequestMapping(value="faultLv/data")
-//	public void faultLvData(Page<Log> page,Log vo,HttpServletResponse response) {
-//		page = service.getLogs(page,vo);
-//		writeJson(response,page);
-//	}
-//	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	/**
 	 * 删除
 	 */
-	@ControllerLogAnnotation(moduleName="日志管理",option="删除")
+	@ControllerLogAnnotation(moduleName="服务管理（事件分类或优先级或故障级别）",option="删除")
 	@RequestMapping(value="deleteThem")
 	public void deleteThem(String[] ids ,HttpServletResponse response) {
-		Json json = new Json();
-		
+		JSONObject json = new JSONObject();
 		try{
 		
-			service.del(ids);
-			json.setSuccess(true);
-			json.setMsg("删除成功");
+			service.delThem(Arrays.asList(ids));
+			json = JsonResultBuilder.success(true).msg("删除成功").json();
 		}catch(Exception e){
-			json.setMsg("系统出错");
+			json = JsonResultBuilder.success(false).msg("系统出错").json();
 			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
@@ -142,37 +122,51 @@ public class LookupController extends CommonController{
 	}
 	
 
-	/**
-	 * 导出日志数据
-	 * @param user
-	 * @param request
-	 * @param response
-	 * @param redirectAttributes
-	 * @return
-	 */
-	@ControllerLogAnnotation(moduleName="日志管理",option="导出")
-    @RequestMapping(value = "exportFile", method=RequestMethod.GET)
-    public void exportFile(Page<Log> page,Log vo,HttpServletResponse response) {
-		JSONObject jsonObject= new JSONObject();
-		try {
-			String fileName ="";
-			if(StringUtils.isEmpty(vo.getFromDate())){
-				fileName  = "日志（"+vo.getToDate()+"之前）.xlsx";
-			}else{
-				 fileName = "日志（"+vo.getFromDate()+"至"+vo.getToDate()+"）.xlsx";
-			}
-//            page = service.getLogs(page,vo);
-//    		new ExportExcel("日志", Log.class).setDataList(page.getDataList()).write(response, fileName).dispose();
-			 List<Log> result = service.getLogs(vo);
-    		new ExportExcel("日志", Log.class).setDataList(result).write(response, fileName).dispose();
-    	//	jsonObject = JsonResultBuilder.success(true).msg( "导出成功").json();
-		} catch (Exception e) {
-			
-			jsonObject = JsonResultBuilder.success(false).msg( "导出用户失败！失败信息："+e.getMessage()).json();
 
-			writeJson(response,jsonObject); //防止写两次responese
+	/**
+	 * 新建
+	 * @throws Exception 
+	 */
+	@RequestMapping(value="save")
+	@ControllerLogAnnotation(moduleName="服务管理（事件分类或优先级或故障级别）",option="新增")
+	public void save(Lookup data,HttpServletResponse response
+			)  {
+		JSONObject json = new JSONObject();
+		try {
+			service.add(data);
+			json = JsonResultBuilder.success(true).msg("保存成功").json();
+		} catch (Exception e) {//service ：回滚、记录异常日志
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			json = JsonResultBuilder.success(false).msg(e.getMessage()).json();
+			logger.error(e.getMessage());
+			
 		}
-    }
+		  writeJson(response,json);
+		
+	}
+	
+	/**
+	 * 更新
+	 */
+	@RequestMapping(value="update")
+	@ControllerLogAnnotation(moduleName="服务管理（事件分类或优先级或故障级别）",option="编辑")
+	public void update(Lookup data,HttpServletResponse response
+			) {
+		JSONObject json = new JSONObject();
+		try {
+			service.update(data);
+			
+			json = JsonResultBuilder.success(true).msg("保存成功").json();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			json = JsonResultBuilder.success(false).msg(e.getMessage()).json();
+			logger.error(e.getMessage());
+		}
+		
+		writeJson(response,json);
+	}
 
 	
 	

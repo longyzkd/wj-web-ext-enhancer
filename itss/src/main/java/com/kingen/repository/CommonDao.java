@@ -37,6 +37,9 @@ import com.kingen.util.Reflections;
  * @param <T>  entity type
  * @date  2016-11-24
  */
+//会不会生成多个不同泛型的commondao
+//因为有泛型的存在，不会直接实例化，只有userDao extends CommonDao<User> 传入类型了，才会实例化CommonDao,并在构造器里持有类型
+//不能是抽象，会实例化不了
 @Repository(value="commonDao")
 public   class CommonDao<T>  {
 
@@ -49,10 +52,24 @@ public   class CommonDao<T>  {
 	 */
 	private Class<T> entityClass;
 	
+	
+	
+	public Class<T> getEntityClass() {
+		return entityClass;
+	}
+
+
+
+	public void setEntityClass(Class<T> entityClass) {
+		this.entityClass = entityClass;
+	}
+
+
+
 	/**
 	 * 构造方法，根据实例类自动获取实体类类型
 	 */
-	public CommonDao() {
+	public CommonDao() {//构造器 在spring初始化的时候执行，创建各个BEAN
 		entityClass = Reflections.getClassGenricType(getClass());
 	}
 	

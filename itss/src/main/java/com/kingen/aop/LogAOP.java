@@ -192,7 +192,7 @@ public class LogAOP {
 		String option = anno.option();
 		Assert.hasText(moduleName, "模块名字不应为空");
 		Assert.hasText(option, "操作名字不应为空");
-		String description = moduleName + "-" + option;
+		String description = moduleName + " - " + option;
 		return description;
 	}
 	public static String getAnnotationValue(ServiceLogAnnotation anno) throws Exception {

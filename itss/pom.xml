@@ -10,6 +10,7 @@
 
 	<properties>
 		<springframework.version>4.0.5.RELEASE</springframework.version>
+		<validator.version>5.2.4.Final</validator.version>
 		<hibernate.version>4.3.5.Final</hibernate.version>
 		<tomcat-jdbc.version>7.0.53</tomcat-jdbc.version>
 		<commons-lang3.version>3.3.2</commons-lang3.version>
@@ -22,7 +23,6 @@
 		<shiro.version>1.2.3</shiro.version>
 		<aspectj.version>1.7.4.RELEASE</aspectj.version>
 		<poi.version>3.9</poi.version>
-		
 		<activiti.version>5.22.0</activiti.version>
 		<jetty.version>8.1.15.v20140411</jetty.version>
 		
@@ -62,6 +62,13 @@
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
 			<version>1.8.5</version>
+		</dependency>
+		
+		<!-- bean validate -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${validator.version}</version>
 		</dependency>
 
 		<!-- WEB begin -->

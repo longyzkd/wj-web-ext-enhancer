@@ -67,7 +67,7 @@ public class Lookup implements java.io.Serializable {
 		this.name = name;
 	}
 
-	@Column(name = "desc", length = 100)
+	@Column(name = "[desc]", length = 100)
 	public String getDesc() {
 		return this.desc;
 	}

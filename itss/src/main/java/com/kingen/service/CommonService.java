@@ -6,17 +6,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import com.kingen.bean.User;
 import com.kingen.repository.CommonDao;
+import com.kingen.util.BeanUtils;
 import com.kingen.util.Page;
+import com.kingen.util.Reflections;
 import com.kingen.web.workflow.PaginationThreadUtils;
 
 /**
@@ -28,14 +34,29 @@ import com.kingen.web.workflow.PaginationThreadUtils;
 //@Transactional 继承commonservice，这里事务配置不会起作用，自己模块的service已经保证事务。除非不继承它，直接注入，可以开启事务
 @Service
 @Transactional
+//@Lazy(value=true)
 public class CommonService<T> {
 	
 	private static Logger logger = LoggerFactory.getLogger(CommonService.class);
 	
 	
 	//@Qualifier(value="commonDao") //要配合@Autowired , // 用@Qualifier会导致泛型消失，不会具体为真正的子类dao
+	//注入真正的实体类型的子类dao
 	@Autowired
-	private CommonDao<T> dao;
+	private CommonDao<T> dao;   
+	
+	/*
+	//解决 直接用CommonDao，泛型消失。
+	//可以直接使用CommonDao，手动给CommonDao传入类型
+	
+	//不可直接使用CommonDao，还是需要他的子类
+	@PostConstruct
+	public void initEntityClass(){//不用构造器，以免dao为空
+		
+		Class<T> entityClass = Reflections.getClassGenricType(getClass());
+		dao.setEntityClass(entityClass); //直接用CommonDao，泛型消失//会覆盖之前的类型
+	}
+	*/
 	
 	/**
 	 * 返回当前对象集合
@@ -209,10 +230,37 @@ public class CommonService<T> {
 	public void delete(T bean) throws Exception{
 		dao.delete(bean);
 	}
-
+	
+	
+	public void delThem(List<String> ids) {
+		Assert.notEmpty(ids,"ID不应为空");
+		for(String id :ids ){
+			dao.delete(id);
+		}
+		
+	}
 	
 	public void update(T bean) throws Exception{
 		dao.update(bean);
+	}
+	/**
+	 * 忽视那些 存在于数据库，而页面上没有的 属性。
+	 * 一般用于页面编辑，并且有些字段没有在页面上显示出来
+	 * @param pk
+	 * @param bean
+	 * @param ignoreProperties 忽视的属性
+	 * @throws Exception
+	 */
+	public void updateNotNull(Serializable pk,T bean,String[] ignoreProperties) throws Exception{
+		
+		T t = dao.unique(pk);
+		BeanUtils.copyNotNullProperties(bean, t,ignoreProperties);
+		dao.update(t);
+	}
+	
+	public void updateNotNull(Serializable pk,T bean) throws Exception{
+		
+		updateNotNull(pk,bean);
 	}
 
 	

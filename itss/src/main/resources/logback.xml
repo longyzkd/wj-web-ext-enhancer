@@ -20,8 +20,8 @@
 	<!--log4jdbc -->
 	<logger name="jdbc.sqltiming" level="INFO"/>
 	
-	<logger name="org.hibernate" level="info"/>
-	<logger name="org.springframework" level="ERROR"/>
+	<logger name="org.hibernate" level="error"/>
+	<logger name="org.springframework" level="error"/>
 <!-- 	<logger name="org.hibernate.search.impl.ConfigContext" level="ERROR"/> -->
 	<logger name="com.kingen" level="INFO"/>
 <!-- 	<logger name="me" level="INFO"/> -->

@@ -20,3 +20,4 @@
 							  ③KickoutSessionControlFilter里面的onAccessDenied，ForceLogoutFilter里面的onAccessDenied。
 		①、 ②是写json到response	，③ request的paramter，在loginController获取再在页面用${}获取出错信息
 	
+		3、不要直接使用CommonService，CommonDao。要先定义自己的类继承它，哪怕为空类。
