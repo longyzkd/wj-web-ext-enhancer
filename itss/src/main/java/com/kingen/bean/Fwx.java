@@ -104,7 +104,7 @@ public class Fwx implements java.io.Serializable {
 		this.procDefTemplate = procDefTemplate;
 	}
 
-	@Column(name = "desc", length = 100)
+	@Column(name = "[desc]", length = 100)
 	public String getDesc() {
 		return this.desc;
 	}

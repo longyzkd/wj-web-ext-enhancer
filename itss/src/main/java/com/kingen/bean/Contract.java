@@ -152,7 +152,7 @@ public class Contract implements java.io.Serializable {
 		this.serviceEndTime = serviceEndTime;
 	}
 
-	@Column(name = "desc", length = 100)
+	@Column(name = "[desc]", length = 100)
 	public String getDesc() {
 		return this.desc;
 	}

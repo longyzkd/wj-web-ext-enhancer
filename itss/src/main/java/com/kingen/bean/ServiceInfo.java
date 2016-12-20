@@ -115,7 +115,7 @@ public class ServiceInfo implements java.io.Serializable {
 		this.title = title;
 	}
 
-	@Column(name = "desc", length = 500)
+	@Column(name = "[desc]", length = 500)
 	public String getDesc() {
 		return this.desc;
 	}
