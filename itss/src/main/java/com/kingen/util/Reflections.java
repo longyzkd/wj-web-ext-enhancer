@@ -120,7 +120,7 @@ public class Reflections {
 	}
 
 	/**
-	 * 循环向上转型, 获取对象的DeclaredField, 并强制设置为可访问.
+	 * 循环向上转型, 获取对象的DeclaredField, 并强制设置为可访问.(如果在当前类找到就返回，否则循环找其父类，最后还没有则返回Null)
 	 * 
 	 * 如向上转型到Object仍无法找到, 返回null.
 	 */

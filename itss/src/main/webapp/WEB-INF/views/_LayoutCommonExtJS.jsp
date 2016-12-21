@@ -58,22 +58,28 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         function closeRefresh() {
         	CloseWindow();
         }
+        
 
         //各自页面分页都用cboPage，默认1页25条
-        var cboPage = Ext.create('Ext.form.ComboBox', {
-            store: new Ext.data.ArrayStore({
-                fields: ['text', 'value'],
-                data: [['10', 10], ['15', 15], ['25', 25], ['30', 30], ['50', 50]]
-            }),
-            valueField: 'value',
-            displayField: 'text',
-            width: 50,
-            value:'25'
-        });
+        var cboPage = function (){
+        	return Ext.create('Ext.form.ComboBox', {
+                store: new Ext.data.ArrayStore({
+                    fields: ['text', 'value'],
+                    data: [['10', 10], ['15', 15], ['25', 25], ['30', 30], ['50', 50]]
+                }),
+                valueField: 'value',
+                displayField: 'text',
+                width: 50,
+                value:'25'
+            });
+
+
+
+            }
 
 		function createPage(store){
 
-			 cboPage.on('select', function (comboBox) {
+			 cboPage().on('select', function (comboBox) {
 				 store.pageSize = parseInt(comboBox.getValue());
 				 store.loadPage(1);
 		        });
@@ -83,7 +89,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		            displayInfo: true,
 		            displayMsg: '显示 {0} - {1} 条记录，总共 {2} 条记录', //start, end and total 
 		            emptyMsg: "没有记录",
-		            items: ['-', '每页显示', cboPage, '条']
+		            items: ['-', '每页显示', cboPage(), '条']
 		        });
 			return pgCfg;
 		}

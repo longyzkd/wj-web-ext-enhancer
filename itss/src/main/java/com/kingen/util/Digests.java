@@ -16,6 +16,7 @@ import java.util.zip.CRC32;
 import org.apache.commons.lang3.Validate;
 
 import com.google.common.hash.Hashing;
+import com.kingen.bean.ClientContact;
 import com.kingen.bean.User;
 import com.kingen.service.account.AccountService;
 
@@ -285,4 +286,15 @@ public class Digests {
 		byte[] hashPassword = Digests.sha1(pwd.getBytes(), Encodes.decodeHex(salt), AccountService.HASH_INTERATIONS);
 		return (Encodes.encodeHex(hashPassword));
 	}
+	
+	
+	public static void entryptPassword(ClientContact user) {
+		
+		
+		byte[] salt = Digests.generateSalt(Integer.valueOf(Global.getConfig("shiro.salt_size")) );
+		user.setSalt(Encodes.encodeHex(salt));
+
+		byte[] hashPassword = Digests.sha1(user.getPwd().getBytes(), salt, Integer.valueOf(Global.getConfig("shiro.hash.interations")) );
+		user.setPwd(Encodes.encodeHex(hashPassword));
+}
 }

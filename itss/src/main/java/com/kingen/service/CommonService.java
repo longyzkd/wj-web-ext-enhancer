@@ -27,6 +27,7 @@ import com.kingen.web.workflow.PaginationThreadUtils;
 
 /**
  * service的简单封装
+ *  但是一个service经常会包含多种实体类型的dao，所以这里的泛型有局限性
  * @author wj
  * @date 2016-11-24
  * @param <T>
@@ -108,8 +109,9 @@ public class CommonService<T> {
 	 * @param params
 	 * @return
 	 */
-	public T unique(String entityName,Map<String, Object> params) {
-		return dao.uniqueByEntity(entityName, params);
+	@Deprecated
+	public T one(String entityName,Map<String, Object> params) {
+		return dao.oneByEntity(entityName, params);
 	}
 	
 	
@@ -137,8 +139,18 @@ public class CommonService<T> {
 	 * @param page
 	 * @return
 	 */
-	public Page<T> find(Page<T> page ,String entityName, Map<String, Object> params) {
+	public  <X> Page<X> find(Page<X> page ,String entityName, Map<String, Object> params) {
 		return dao.findByEntity(page, entityName, params);
+		
+		
+	}
+	/**
+	 * entityName对象的分页集合 ，带参数的
+	 * @param page
+	 * @return
+	 */
+	public <X> Page<X> find(Page<X> page ,String entityName) {
+		return dao.findByEntity(page, entityName, null);
 		
 		
 	}

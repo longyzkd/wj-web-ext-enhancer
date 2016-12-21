@@ -19,35 +19,30 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            	id: 'addBtn',
 	                text: '新增',
 	                iconCls: 'x-button-delete',
-	                handler:function(){edit('insert','${type}')} 
+	                handler:function(){edit('insert')} 
 	            },updateBtn= {
                 	id: 'updateBtn',
                     text: '编辑',
                     iconCls: 'x-button-delete',
-                    handler:function(){ edit('update','${type}')} 
+                    handler:function(){ edit('update')} 
                 },delBtn= {
 	            	id: 'delBtn',
 	                text: '删除',
 	                iconCls: 'x-button-delete',
 	                handler: deleteThem
-	            }, viewBtn= {
-	            	id: 'exportBtn',
-	                text: '查看',
-	                iconCls: 'x-button-application_cascade',
-	                handler: function(){edit('view','${type}')} 
 	            };
 	        var tbar1 = Ext.create('Ext.toolbar.Toolbar', {
-	            items: [addBtn,'-',updateBtn,'-',delBtn,'-',viewBtn]
+	            items: [addBtn,'-',updateBtn,'-',delBtn]
 	        });
 	       
         
-        <%=com.kingen.util.JsonHelperJS.FormExtJsModel("com.kingen.bean.Lookup", "Model", "","")%>
+        <%=com.kingen.util.JsonHelperJS.FormExtJsModel("com.kingen.bean.Contract", "Model", "","")%>
         var store = Ext.create('Ext.data.Store', {//pageSize 默认25
             autoLoad: true,
             model: 'Model',
             proxy: {
                 type: 'ajax',
-                url: '<%=basePath%>lookup/data/${type}',
+                url: '<%=basePath%>contract/data',
                 reader: { type: 'json', root: 'dataList' }
             },
             listeners: {
@@ -58,7 +53,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         });
      
 
-
         
         var sm = Ext.create('Ext.selection.CheckboxModel', { mode: 'MULTI' });
         var grid = Ext.create('Ext.grid.Panel', {
@@ -68,11 +62,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             //dockedItems: [tbar2,tbar1],
             selModel: sm,
             columnLines: false,
-            viewConfig:{getRowClass:changeRowClass},
             columns: [
 					new Ext.grid.PageRowNumberer(),
-					{ header: '名称', dataIndex: 'name', align: 'center', flex:2},
-					{ header: '描述', dataIndex: 'desc', align: 'center', flex:1 }
+					{ header: '合同名称', dataIndex: 'contractName', align: 'center', flex:2},
+					{ header: '合同编号', dataIndex: 'contractNo', align: 'center', flex:1 },
+					{ header: '客户单位', dataIndex: 'unitName', align: 'center', flex:1 },
+					{ header: '合同类型', dataIndex: 'contractType', align: 'center', flex:1 },
+					{ header: '合同描述', dataIndex: 'desc', align: 'center', flex:1 }
 				],
 				bbar: createPage(store)
         });
@@ -96,20 +92,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 //函数区        
 //----------------------------------------------------------------------------------------------------------
         
-	    function changeRowClass(record, rowIndex, rowParams, store){
-	        if (record.get("type") == "2") {        
-	            return 'x-grid-record-red';
-	        }
-	    } 
-
-	    
         
         
         
 	    //编辑用户
-        function edit(action,type){
+        function edit(action){
         	
-        	var param = '/'+type+'?action=' + action ;
+        	var param = '?action=' + action ;
         	if(action!='insert'){//update or view 
         		var  id = 	checkBox(sm,'id');
         		
@@ -121,10 +110,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         	else{
         		
         	}
-        	var title = '数据字典维护';
+        	var title = '服务水平维护';
         	
-        	var url = '<%=path%>/lookup/toEdit'+param;
-        	ShowWindow(store, title, url, 600, 380);
+        	var url = '<%=path%>/contract/toEdit'+param;
+        	ShowWindow(store, title, url, 700, 380);
         	
         }       
         
@@ -137,7 +126,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 if (btn == 'yes') {
                     Ext.Msg.wait('正在处理，请稍等......');
                     Ext.Ajax.request({
-                        url: '<%=basePath%>lookup/deleteThem',
+                        url: '<%=basePath%>contract/deleteThem',
                         params: { ids: res  },
                         success: function (response) {
                             Ext.Msg.hide();

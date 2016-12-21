@@ -19,8 +19,17 @@ public class Contract implements java.io.Serializable {
 	// Fields
 
 	private String id;
+	/**
+	 * 合同名称
+	 */
 	private String contractName;
+	/**
+	 * 客户单位
+	 */
 	private String clientId;
+	/**
+	 * 客户方联系人
+	 */
 	private String clientContactId;
 	private String contractNo;
 	private String seviceLv;

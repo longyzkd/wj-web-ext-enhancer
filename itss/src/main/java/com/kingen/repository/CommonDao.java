@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -26,7 +27,9 @@ import org.hibernate.transform.ResultTransformer;
 import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
+import com.google.common.collect.Maps;
 import com.kingen.util.Page;
 import com.kingen.util.Reflections;
 
@@ -73,7 +76,10 @@ public   class CommonDao<T>  {
 		entityClass = Reflections.getClassGenricType(getClass());
 	}
 	
-	
+	public void flushAndClear(){
+		getCurrentSession().flush();
+		getCurrentSession().clear();
+	}
 
 	/**
 	 * 获得当前事物的session
@@ -108,7 +114,7 @@ public   class CommonDao<T>  {
 	 * @param hql
 	 * @return
 	 */
-	public T unique(String hql) {
+	public T one(String hql) {
 		return (T) createQuery(hql).uniqueResult();
 	}
 	
@@ -117,7 +123,7 @@ public   class CommonDao<T>  {
 	 * @param hql
 	 * @return
 	 */
-	public T unique(String hql, Map<String, Object> params) {
+	public T one(String hql, Map<String, Object> params) {
 		return (T) createQuery(hql,params).uniqueResult();
 	}
 	/**
@@ -130,7 +136,8 @@ public   class CommonDao<T>  {
 	 * @param params
 	 * @return
 	 */
-	public T uniqueByEntity(String entityName, Map<String, Object> params) {
+	@Deprecated
+	public T oneByEntity(String entityName, Map<String, Object> params) {
 		
 		String hql = hqlSetter(entityName, params);
 		Query q = createQuery(hql, params);
@@ -219,6 +226,14 @@ public   class CommonDao<T>  {
 	 */
     @SuppressWarnings("unchecked")
 	public  Page<T> find(Page<T> page){
+    	
+    	//如果类没有提供泛型，则用page的泛型  wj
+    	//TODO test
+    	Class<T> entityClass = this.entityClass;
+    	if(Object.class.equals(entityClass)){
+    		entityClass = Reflections.getClassGenricType(page.getClass());
+    	}
+    	
     	String  qlString = "from "+ entityClass.getSimpleName();
 		// get count
 	        String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
@@ -293,7 +308,7 @@ public   class CommonDao<T>  {
      */
     
     @SuppressWarnings("unchecked")
-    public  Page<T> findByEntity(Page<T> page ,String entityName, Map<String, Object> params){
+    public <X> Page<X> findByEntity(Page<X> page ,String entityName, Map<String, Object> params){
     	String  qlString =	hqlSetter(entityName, params);
     	
     	// get count
@@ -339,28 +354,82 @@ public   class CommonDao<T>  {
 		Query q = createQuery(hql, params);
 		return q.list();
 	}
+	
 	/**
+	 * 查询指定对象的列表
+	 * 
 	 * 要求params MAP的key 必须是entity的属性
 	 * 根据entityName,params 拼装hql，并返回集合
+	 * @author wj
 	 * @param entityName
 	 * @param params
 	 * @return
 	 */
-	public List<T> findByEntity(String entityName, Map<String, Object> params) {
+	public <X> List<X> findByEntity(String entityName, Map<String, Object> params) {
 		
 		String hql = hqlSetter(entityName, params);
 		Query q = createQuery(hql, params);
 		return q.list();
 	}
+	
+	/**
+	 * 查询指定对象的列表
+	 * @param x  对象
+	 * @param fields  要过滤的属性
+	 * @return
+	 */
+	public <X> List<X> findByEntity(X x,String... fields) {
+		
+		String hql = queryHqlSetter(x.getClass().getSimpleName(), fields);
+		
+		Map<String, Object> params =  Maps.newHashMapWithExpectedSize(fields.length);
+		for(String field : fields){
+			params.put(field, Reflections.getFieldValue(x, field));
+		}
+		Query q = createQuery(hql, params);
+		return q.list();
+	}
+	
+	
+	/**
+	 * 查询当前对象的列表
+	 * @param params 参数
+	 * @return
+	 */
+	public  List<T> find(Map<String, Object> params) {
+		String hql = hqlSetter(entityClass.getSimpleName(), params);
+		Query q = createQuery(hql, params);
+		return q.list();
+	}
+	/**
+	 * 查询当前对象的列表
+	 * @param t  当前对象
+	 * @param fields 要过滤的参数
+	 * @return
+	 */
+	public  List<T> find(T t ,String... fields) {
+		String hql = queryHqlSetter(entityClass.getSimpleName(), fields);
+		
+		Map<String, Object> params = Maps.newHashMapWithExpectedSize(fields.length);
+		for(String field : fields){
+			params.put(field, Reflections.getFieldValue(t, field));
+		}
+		Query q = createQuery(hql, params);
+		return q.list();
+	}
 	 
+	
+	
 	/**
 	 * 
 	 * 根据entityName,params 拼装hql，要求params MAP的key 必须是entity的属性
+	 * @author wj
 	 * @param entityName
 	 * @param params
 	 * @return
 	 */
-	public String hqlSetter(String entityName, Map<String, Object> params){
+	private String hqlSetter(String entityName, Map<String, Object> params){
+		Assert.hasText(entityName,"entityName不应为空");
 		String hql = "from "+entityName +" where 1=1 ";
 		if (params != null) {
             Set<String> keySet = params.keySet();
@@ -372,6 +441,26 @@ public   class CommonDao<T>  {
 		return hql;
 		
 	}
+	
+	/**
+	 * 根据给定对象的属性 自动拼接hql
+	 * @author wj
+	 * @param entityName
+	 * @param fieldNames
+	 * @return
+	 */
+	private String queryHqlSetter(String entityName , String... fieldNames){
+		Assert.hasText(entityName,"entityName不应为空");
+		String hql = "from "+entityName +" where 1=1 ";
+		if ( !ArrayUtils.isEmpty(fieldNames)) {
+			
+			for (String field : fieldNames) {
+				hql += "and "+field+" =:"+field;
+			}
+		}
+		return hql;
+	}
+	
 	/**
 	 * 返回任意类型的实体，区别于<T>
 	 * @param hql
@@ -468,7 +557,7 @@ public   class CommonDao<T>  {
 	//Criteria 动态参数绑定就比较麻烦了
     /**
 	 * 设置查询参数
-	 * @param query
+	 * @param query  已经带有参数的hql了
 	 * @param parameter
 	 */
 	private void setParameter(Query query, Map<String,Object> parameter){

@@ -12,6 +12,11 @@ import org.hibernate.annotations.GenericGenerator;
  * 
  * @author MyEclipse Persistence Tools
  */
+/**
+ * 客户联系人
+ * @author wj
+ *
+ */
 @Entity
 @Table(name = "t_client_contact")
 public class ClientContact implements java.io.Serializable {
@@ -24,6 +29,10 @@ public class ClientContact implements java.io.Serializable {
 	private String pwd;
 	private String phone;
 
+	
+	
+	private String salt;
+	
 	// Constructors
 
 	/** default constructor */
@@ -88,4 +97,11 @@ public class ClientContact implements java.io.Serializable {
 		this.phone = phone;
 	}
 
+	@Column(name="salt")
+	public String getSalt() {
+		return salt;
+	}
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
 }
