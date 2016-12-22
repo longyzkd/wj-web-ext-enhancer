@@ -19,7 +19,7 @@ import com.kingen.util.Page;
 // Spring Service Bean的标识.
 @Component
 @Transactional
-public class LookupService extends CommonService<Lookup>{
+public class LookupService extends CommonService<Lookup,String>{
 
 	private  Logger logger = LoggerFactory.getLogger(getClass());
 	

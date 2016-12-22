@@ -31,7 +31,7 @@ import com.kingen.util.Page;
 // Spring Service Bean的标识.
 @Component
 @Transactional
-public class ClientService extends CommonService<Client>{
+public class ClientService extends CommonService<Client,String>{
 	
 	@Autowired
 	private ClientDao dao;

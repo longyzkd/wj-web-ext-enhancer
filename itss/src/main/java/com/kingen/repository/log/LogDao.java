@@ -19,7 +19,7 @@ import com.kingen.repository.CommonDao;
 import com.kingen.util.Page;
 
 @Component
-public class LogDao extends CommonDao<Log>  {
+public class LogDao extends CommonDao<Log,String>  {
 	
 
 	

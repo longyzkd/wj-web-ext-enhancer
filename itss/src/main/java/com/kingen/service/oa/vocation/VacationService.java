@@ -12,7 +12,7 @@ import com.kingen.service.CommonService;
 
 @Service
 @Transactional
-public class VacationService extends CommonService<Vacation>  {
+public class VacationService extends CommonService<Vacation,Integer>  {
 
 	
 	public Serializable doAdd(Vacation vacation) throws Exception {

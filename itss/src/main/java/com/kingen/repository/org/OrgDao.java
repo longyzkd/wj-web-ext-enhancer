@@ -23,7 +23,7 @@ import com.kingen.repository.CommonDao;
 import com.kingen.util.Page;
 
 @Component
-public class OrgDao extends CommonDao<SysOrg>  {
+public class OrgDao extends CommonDao<SysOrg,String>  {
 	
 	public SysOrg findByPK(String pk){
 		

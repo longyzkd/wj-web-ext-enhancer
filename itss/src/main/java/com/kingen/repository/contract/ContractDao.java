@@ -6,7 +6,7 @@ import com.kingen.bean.Contract;
 import com.kingen.repository.CommonDao;
 
 @Component
-public class ContractDao extends CommonDao<Contract>  {
+public class ContractDao extends CommonDao<Contract,String>  {
 
 
 

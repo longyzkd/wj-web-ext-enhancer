@@ -36,7 +36,7 @@ import com.kingen.web.workflow.PaginationThreadUtils;
 @Service
 @Transactional
 //@Lazy(value=true)
-public class CommonService<T> {
+public class CommonService<T,PK  extends Serializable> {
 	
 	private static Logger logger = LoggerFactory.getLogger(CommonService.class);
 	
@@ -44,7 +44,7 @@ public class CommonService<T> {
 	//@Qualifier(value="commonDao") //要配合@Autowired , // 用@Qualifier会导致泛型消失，不会具体为真正的子类dao
 	//注入真正的实体类型的子类dao
 	@Autowired
-	private CommonDao<T> dao;   
+	private CommonDao<T,PK> dao;   
 	
 	/*
 	//解决 直接用CommonDao，泛型消失。
@@ -103,6 +103,19 @@ public class CommonService<T> {
 		
 		 return dao.unique(id);  
 	}
+	
+	/**
+	 * 查询唯一指定对象
+
+	 * @param entityName 实体名
+	 * @param idName ID名
+	 * @param id  id值
+	 * @return
+	 */
+	public <X> X uniqueEntity(String entityName,String idName,PK id) {
+		return dao.uniqueEntity(entityName,idName, id);
+	}
+	
 	/**
 	 * 由参数保证唯一性
 	 * @param entityName

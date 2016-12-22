@@ -18,7 +18,7 @@ import com.kingen.repository.CommonDao;
 import com.kingen.util.Page;
 
 @Component
-public class LookupDao extends CommonDao<Lookup>  {
+public class LookupDao extends CommonDao<Lookup,String>  {
 
 
 

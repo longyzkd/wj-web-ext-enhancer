@@ -9,7 +9,7 @@ import com.kingen.bean.Client;
 import com.kingen.repository.CommonDao;
 
 @Component
-public class ClientDao extends CommonDao<Client>  {
+public class ClientDao extends CommonDao<Client,String>  {
 
 	public void delRel(String string,String v) {
 		String field = "client".equals(string)?"clientId":"clientContactId";

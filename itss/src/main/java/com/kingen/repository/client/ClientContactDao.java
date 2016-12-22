@@ -11,7 +11,7 @@ import com.kingen.repository.CommonDao;
 import com.kingen.util.Page;
 
 @Component
-public class ClientContactDao extends CommonDao<ClientContact>  {
+public class ClientContactDao extends CommonDao<ClientContact,String>  {
 
 	public Page<ClientContact> findClientContacts(Page<ClientContact> page, String clientId) {
 		Assert.hasText(clientId, "客户ID不应为空");

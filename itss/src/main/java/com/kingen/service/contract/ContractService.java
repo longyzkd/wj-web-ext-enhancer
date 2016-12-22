@@ -17,7 +17,7 @@ import com.kingen.service.CommonService;
 // Spring Service Bean的标识.
 @Component
 @Transactional
-public class ContractService extends CommonService<Contract>{
+public class ContractService extends CommonService<Contract,String>{
 	
 	@Autowired
 	private ContractDao dao;

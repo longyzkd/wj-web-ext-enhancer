@@ -15,7 +15,7 @@ import com.kingen.bean.SysOrgMenuId;
 import com.kingen.repository.CommonDao;
 
 @Component
-public class PermissionDao extends CommonDao<SysOrgMenu>  {
+public class PermissionDao extends CommonDao<SysOrgMenu,SysOrgMenuId>  {
 	
 
 	

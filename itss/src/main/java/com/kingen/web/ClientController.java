@@ -1,7 +1,6 @@
 package com.kingen.web;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Maps;
 import com.kingen.aop.ControllerLogAnnotation;
 import com.kingen.bean.Client;
 import com.kingen.bean.ClientContact;
@@ -87,7 +85,7 @@ public class ClientController extends CommonController{
 	
 	@RequestMapping(value="contact/one")
 	public void contactOne(String id, HttpServletResponse response) {
-		Client u  = service.unique(id);
+		ClientContact u  = service.uniqueEntity("ClientContact", "id", id);
 		writeJson(response,u);
 	}
 	

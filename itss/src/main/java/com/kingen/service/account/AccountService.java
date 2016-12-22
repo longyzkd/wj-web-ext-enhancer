@@ -44,7 +44,7 @@ import com.kingen.util.Page;
 // Spring Service Bean的标识.
 @Component
 @Transactional
-public class AccountService extends CommonService<User> {
+public class AccountService extends CommonService<User,String> {
 
 	public static final String HASH_ALGORITHM = "SHA-1";
 	public static final int HASH_INTERATIONS = 1024;

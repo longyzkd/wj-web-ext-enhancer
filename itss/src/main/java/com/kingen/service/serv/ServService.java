@@ -22,7 +22,7 @@ import com.kingen.util.Page;
 // Spring Service Bean的标识.
 @Component
 @Transactional
-public class ServService extends CommonService<ServiceLv>{
+public class ServService extends CommonService<ServiceLv,String>{
 	
 	@Autowired
 	private ServiceLvDao servLvDao;

@@ -18,7 +18,7 @@ import com.kingen.repository.CommonDao;
 import com.kingen.util.Page;
 
 @Component
-public class UserDao extends CommonDao<User>  {
+public class UserDao extends CommonDao<User,String>  {
 	
 	public User findByLoginName(String loginName){
 		

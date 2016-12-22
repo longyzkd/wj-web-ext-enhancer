@@ -16,7 +16,7 @@ import com.kingen.bean.Menu;
 import com.kingen.repository.CommonDao;
 
 @Component
-public class MenuDao extends CommonDao<Menu>  {
+public class MenuDao extends CommonDao<Menu,String>  {
 	
 	public List<Menu> find(){
 		

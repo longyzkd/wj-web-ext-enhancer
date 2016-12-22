@@ -32,7 +32,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 vtype:'email'
               
             }): Ext.widget('displayfield',{
-            	  name: 'userId',
+            	  name: 'email',
                   fieldLabel: '电子邮件'+'<font color=red>*</font>'
                });
             var txtUserName = new Ext.form.field.Text({
@@ -69,7 +69,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                             return true;
                         }
                     },
-                     hidden:action=='update'?true:false
+               hidden:action=='update'?true:false
             };    
 
             var txtPhone = new Ext.form.field.Text({
@@ -98,6 +98,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     items: [txtUserID, txtUserName ]
                 },{
                     xtype: 'fieldcontainer',
+                    id:'pwdContainer',
                     layout: { type: 'hbox', align: 'middle' },
                     items: [txtPwd, txtPwdConfirm]
                 },{
@@ -121,7 +122,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 listeners: {
                 }
             });
-        
+            
+            if(action=='update'){
+           		
+           		formRight.remove(Ext.getCmp('pwdContainer'));
+           }
          
           //用户Model
             

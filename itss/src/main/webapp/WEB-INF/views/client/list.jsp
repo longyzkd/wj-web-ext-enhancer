@@ -258,12 +258,14 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 }
             });
         }
+
+        
 	    //编辑联系人
         function editUser(action){
         	
         	var param = '?action=' + action+"&clientId="+sm.getLastSelected( ).get('id') ;
         	if(action!='insert'){//update or view 
-        		var  id = 	checkBox(sm,'id');
+        		var  id = 	checkBox(smUser,'id');
         		
         		if(!id){
         			return false;
@@ -276,13 +278,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         	var title = '客户联系人维护';
         	
         	var url = '<%=path%>/client/contact/toEdit'+param;
-        	ShowWindow(store, title, url, 600, 380);
+        	ShowWindow(storeUser, title, url, 600, 380);
         	
         }       
         
         //删除联系人
         function deleteThemUser() {
-            var res = checkBoxs(sm,'id');
+            var res = checkBoxs(smUser,'id');
             if (!res) { return; } 
 
             Ext.Msg.confirm('删除记录', '确认要删除该记录吗?', function (btn) {
@@ -300,7 +302,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                                 buttons: Ext.Msg.OK,
                                 icon: Ext.Msg.INFO,
                                 fn: function () {
-                                    store.load();
+                                	storeUser.load();
                                 }
                             });
                         },

@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
@@ -44,7 +45,7 @@ import com.kingen.util.Reflections;
 //因为有泛型的存在，不会直接实例化，只有userDao extends CommonDao<User> 传入类型了，才会实例化CommonDao,并在构造器里持有类型
 //不能是抽象，会实例化不了
 @Repository(value="commonDao")
-public   class CommonDao<T>  {
+public   class CommonDao<T,PK  extends Serializable>  {
 
 	@Autowired
 	private SessionFactory sessionFactory;
@@ -139,10 +140,41 @@ public   class CommonDao<T>  {
 	@Deprecated
 	public T oneByEntity(String entityName, Map<String, Object> params) {
 		
-		String hql = hqlSetter(entityName, params);
+		String hql = queryHqlSetter(entityName, params);
 		Query q = createQuery(hql, params);
 		return (T)q.uniqueResult();
 	}
+	
+	/**
+	 * 查询指定的唯一实体
+	 * @param entityName  实体名
+	 * @param id  主键
+	 * @param idName  主键字段名  可以为id.userId这种
+	 * @return
+	 */
+	public <X> X uniqueEntity(String entityName,String idName,PK id) {
+		
+		String hql = idHqlSetter(entityName,idName, id);
+		Map<String,Object> params = Maps.newHashMapWithExpectedSize(1);
+		params.put("p1", id);
+		Query q = createQuery(hql,params);
+		return (X)q.uniqueResult();
+	}
+	
+	
+	private String idHqlSetter(String entityName, String idName, PK id) {
+		
+		Assert.hasText(entityName,"entityName不应为空");
+		Assert.hasText(idName,"idName不应为空");
+		Validate.isTrue(id!=null,"id不应为空");
+		String hql = "from "+entityName +" where "+idName+"  = :p1"; //无法保证id的类型，只能用setParameter方法 传参
+		
+		
+		return hql;
+	}
+
+
+
 	/**
 	 * 返回<T>
 	 * @return
@@ -270,7 +302,7 @@ public   class CommonDao<T>  {
     @SuppressWarnings("unchecked")
     public  Page<T> find(Page<T> page,Map<String, Object> params){
     	
-    	String  qlString =	hqlSetter(entityClass.getSimpleName(), params);
+    	String  qlString =	queryHqlSetter(entityClass.getSimpleName(), params);
     	
     	// get count
     	String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
@@ -309,7 +341,7 @@ public   class CommonDao<T>  {
     
     @SuppressWarnings("unchecked")
     public <X> Page<X> findByEntity(Page<X> page ,String entityName, Map<String, Object> params){
-    	String  qlString =	hqlSetter(entityName, params);
+    	String  qlString =	queryHqlSetter(entityName, params);
     	
     	// get count
     	String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
@@ -367,7 +399,7 @@ public   class CommonDao<T>  {
 	 */
 	public <X> List<X> findByEntity(String entityName, Map<String, Object> params) {
 		
-		String hql = hqlSetter(entityName, params);
+		String hql = queryHqlSetter(entityName, params);
 		Query q = createQuery(hql, params);
 		return q.list();
 	}
@@ -397,7 +429,7 @@ public   class CommonDao<T>  {
 	 * @return
 	 */
 	public  List<T> find(Map<String, Object> params) {
-		String hql = hqlSetter(entityClass.getSimpleName(), params);
+		String hql = queryHqlSetter(entityClass.getSimpleName(), params);
 		Query q = createQuery(hql, params);
 		return q.list();
 	}
@@ -428,7 +460,7 @@ public   class CommonDao<T>  {
 	 * @param params
 	 * @return
 	 */
-	private String hqlSetter(String entityName, Map<String, Object> params){
+	private String queryHqlSetter(String entityName, Map<String, Object> params){
 		Assert.hasText(entityName,"entityName不应为空");
 		String hql = "from "+entityName +" where 1=1 ";
 		if (params != null) {
