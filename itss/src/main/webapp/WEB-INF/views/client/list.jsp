@@ -111,7 +111,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         
         <%=com.kingen.util.JsonHelperJS.FormExtJsModel("com.kingen.bean.ClientContact", "UserModel", "","")%>
         var storeUser = Ext.create('Ext.data.Store', {//pageSize 默认25
-            autoLoad: true,
+            autoLoad: false,  //让主store来推动他加载
             model: 'UserModel',
             proxy: {
                 type: 'ajax',
