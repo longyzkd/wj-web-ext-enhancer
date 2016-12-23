@@ -276,6 +276,10 @@
 {
     background-image:url(../jslib/ExtJs/resources/themes/icons/application_delete.png);
 }
+.x-button-eye
+{
+    background-image:url(../jslib/ExtJs/resources/themes/icons/eye.png);
+}
 
 
 

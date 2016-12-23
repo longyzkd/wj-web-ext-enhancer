@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * 封装fastJson的链式编程,比如  JsonResultBuilder.success(true).msg("任务已签收").json();
+ * 必须先调success() 
+ * <p>
+ * 封装fastJson {@link com.alibaba.fastjson.JSONObject  JSONObject} 的链式编程,<p>比如  JsonResultBuilder.success(true).msg("任务已签收").json();
  * @author wj
  * @date 2016-11-10
  *

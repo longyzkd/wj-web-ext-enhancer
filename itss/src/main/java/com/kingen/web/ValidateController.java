@@ -21,13 +21,14 @@ import com.kingen.service.account.AccountService;
 import com.kingen.util.Digests;
 import com.kingen.util.Encodes;
 import com.kingen.util.Json;
+import com.kingen.util.JsonResultBuilder;
 
 /**
- * LoginController负责打开登录页面(GET请求)和登录出错页面(POST请求)，
+ *
+ * EXT 所用验证器
  * 
- * 真正登录的POST请求由Filter完成,
- * 
- * @author calvin
+ * @author wj
+ * @date 2016-1-1
  */
 @Controller
 @RequestMapping(value = "/validate")
@@ -67,6 +68,30 @@ public class ValidateController extends CommonController{
 			e.printStackTrace();
 			json.setMsg("系统错误");
 			writeJson(response,json);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param beanClazz
+	 * @param property
+	 * @param val 参数暂仅支持String
+	 * @param action 新增还是修改
+	 * @return
+	 */
+	@RequestMapping(value="checkunique",method = RequestMethod.POST)
+	public @ResponseBody Object checkunique(String beanClazz,String property,String val , String rawValue ,String action)  {
+		try{
+			boolean exist = CollectionUtils.isEmpty(service.getEntityBy(beanClazz,property,val,rawValue,action))?false:true;
+//			return ExtUtils.mapValidate(exist);
+			return JsonResultBuilder.success(true).data(exist).json();
+//			throw new Exception();
+			
+		} catch (Exception e) {//TODO 做成过滤器
+			logger.error(e.getMessage());
+			e.printStackTrace();
+//			return ExtUtils.mapError("系统错误");
+			return JsonResultBuilder.success(false).msg("系统错误").json();
 		}
 	}
 }

@@ -22,6 +22,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 <script src="<%=path%>/static/jslib/script/rootPath.js?v=1.1" type="text/javascript"></script>
 <script src="<%=path%>/static/jslib/script/function.js" type="text/javascript"></script>
 <script src="<%=path%>/static/jslib/script/extend.js" type="text/javascript"></script>
+<script src="<%=path%>/static/jslib/common.js" type="text/javascript"></script>
 
 
 

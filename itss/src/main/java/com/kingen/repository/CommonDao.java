@@ -2,6 +2,8 @@ package com.kingen.repository;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +38,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Maps;
 import com.kingen.util.Page;
+import com.kingen.util.Parameter;
 import com.kingen.util.Reflections;
 
 
@@ -153,21 +160,30 @@ public   class CommonDao<T,PK  extends Serializable>  {
 	 * @return
 	 */
 	public <X> X uniqueEntity(String entityName,String idName,PK id) {
+		Validate.isTrue(id!=null,"id不应为空");
 		
-		String hql = idHqlSetter(entityName,idName, id);
+		String hql = idHqlSetter(entityName,idName);
+		hql = "from "+ hql;
+		
 		Map<String,Object> params = Maps.newHashMapWithExpectedSize(1);
 		params.put("p1", id);
 		Query q = createQuery(hql,params);
 		return (X)q.uniqueResult();
 	}
 	
-	
-	private String idHqlSetter(String entityName, String idName, PK id) {
+	/**
+	 * 形成如   User where id=:p1 的hql
+	 * @param entityName
+	 * @param idName
+	 * @param id
+	 * @return
+	 */
+	private String idHqlSetter(String entityName, String idName) {
 		
 		Assert.hasText(entityName,"entityName不应为空");
 		Assert.hasText(idName,"idName不应为空");
-		Validate.isTrue(id!=null,"id不应为空");
-		String hql = "from "+entityName +" where "+idName+"  = :p1"; //无法保证id的类型，只能用setParameter方法 传参
+		
+		String hql = entityName +" where "+idName+"  = :p1"; //无法保证id的类型，只能用setParameter方法 传参
 		
 		
 		return hql;
@@ -374,7 +390,7 @@ public   class CommonDao<T,PK  extends Serializable>  {
     
     
 	
-	public List<T> find(String hql, Class<T> resultClass) {
+	public <X> List<X> find(String hql, Class<X> resultClass) {
 		Query q = getCurrentSession().createQuery(hql);
 		q.setResultTransformer(Transformers.aliasToBean(resultClass));
 		
@@ -890,13 +906,38 @@ public   class CommonDao<T,PK  extends Serializable>  {
 	
 	
 	/**
-	 * 物理删除当前对象
+	 * 物理删除当前对象 ,要求主键是名是ID
 	 * @param id
 	 * @return
 	 */
 	public int delete(Serializable id){
 		String hql = "delete from " +entityClass.getSimpleName()+" where id=:p1";
 		return getCurrentSession().createQuery(hql).setParameter("p1", id).executeUpdate();
+	}
+	
+	
+	/**
+	 * 物理删除当前对象 ,给定主键名称
+	 * @param id
+	 * @return
+	 */
+	public int delete(PK id,String idName){
+		
+		return deleteEntity(entityClass.getSimpleName(),idName,id);
+	}
+	/**
+	 * 物理删除指定对象 ,给定主键名称
+	 * @param id
+	 * @return
+	 */
+	public int deleteEntity(String entityName,String idName,PK id){
+		String hql = idHqlSetter(entityName, idName);
+		hql = "delete from " + hql;
+		
+		Map<String,Object> params = Maps.newHashMapWithExpectedSize(1);
+		params.put("p1", id);
+		Query q = createQuery(hql,params);
+		return q.executeUpdate();
 	}
 
 	
@@ -963,4 +1004,71 @@ public   class CommonDao<T,PK  extends Serializable>  {
 			}
 		}
 	}
+	
+	
+	/**
+	 * 保存实体,可以在保存或者更新实体前  做一些通用操作 比如 共同的属性 创建时间之类
+	 * @param entity
+	 */
+	public void savePre(T entity){
+		try {
+			// 获取实体编号
+			Object id = null;
+			for (Method method : entity.getClass().getMethods()){
+				Id idAnn = method.getAnnotation(Id.class);
+				if (idAnn != null){
+					id = method.invoke(entity);
+					break;
+				}
+			}
+			// 插入前执行方法
+//			if (StringUtils.isBlank((String)id)){
+			if (id==null ){	//id为Long
+				for (Method method : entity.getClass().getMethods()){
+					PrePersist pp = method.getAnnotation(PrePersist.class);
+					if (pp != null){
+						method.invoke(entity);
+						break;
+					}
+				}
+			}
+			// 更新前执行方法
+			else{
+				for (Method method : entity.getClass().getMethods()){
+					PreUpdate pu = method.getAnnotation(PreUpdate.class);
+					if (pu != null){
+						method.invoke(entity);
+						break;
+					}
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+//		catch (Exception e) { //catch住  不会回滚
+//			e.printStackTrace();
+//		}
+		getCurrentSession().saveOrUpdate(entity);
+	}
+	
+	/**
+	 * 值不等于val的集合
+	 * @param beanClazz
+	 * @param property
+	 * @param val
+	 * @return
+	 */
+	public <E> List<E> findExcept( String beanClazz,String property,Object val,Object rawValue) {
+		
+		String hql = " from "+beanClazz+"  where id not in ( select id  from "+beanClazz+" where  "+property+" = :p1 ) and "+property+" =:p2";
+		return findme(hql,new Parameter(rawValue,val));
+				
+	}
+	
+	
+	
 }

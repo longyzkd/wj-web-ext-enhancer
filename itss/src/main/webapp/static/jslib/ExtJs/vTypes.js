@@ -157,6 +157,42 @@ Ext.apply(Ext.form.field.VTypes, {
         });
         return correct;
     },
-    checkpwdText:'密码不正确'  
+    checkpwdText:'密码不正确'  ,
+    
+    checkunique : function(val, field) {
+        if (!val) {
+            return true;
+        }
+        var exist = false;
+        Ext.Ajax.request({
+			url : basepath+'/validate/checkunique',// 获取面板的地址
+			params : {
+				beanClazz:field.beanClazz,
+				property:field.property,
+				val : val,
+				rawValue:field.myrawValue,
+				action:field.action
+			},
+			async : false,//同步执行,为了争取返回exist，必须同步
+			method:'post',
+            success: function(response){
+            	var requestSuccess = Ext.JSON.decode(response.responseText).success;
+            	if(requestSuccess){
+            		exist = Ext.JSON.decode(response.responseText).data;
+            	}else{
+            		 Ext.MessageBox.show({
+                         title: '系统错误',
+                         msg: Ext.decode(response.responseText).message,
+                         icon: Ext.MessageBox.ERROR,
+                         buttons: Ext.Msg.OK
+                     });
+            	}
+            	
+            },
+            failure: function(response){}
+        });
+        return !exist;
+    },
+    checkuniqueText:'已经存在'  
 });
 

@@ -41,13 +41,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	        });
 	       
         
-        <%=com.kingen.util.JsonHelperJS.FormExtJsModel("com.kingen.bean.Lookup", "Model", "","")%>
+        <%=com.kingen.util.JsonHelperJS.FormExtJsModel("com.kingen.bean.Supplier", "Model", "","")%>
         var store = Ext.create('Ext.data.Store', {//pageSize 默认25
             autoLoad: true,
             model: 'Model',
             proxy: {
                 type: 'ajax',
-                url: '<%=basePath%>lookup/data/${type}',
+                url: '<%=basePath%>supplier/data/${type}',
                 reader: { type: 'json', root: 'dataList' }
             },
             listeners: {
@@ -65,14 +65,18 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             region: 'center',
             store: store,
             dockedItems: [tbar1],
-            //dockedItems: [tbar2,tbar1],
             selModel: sm,
             columnLines: false,
             viewConfig:{getRowClass:changeRowClass},
             columns: [
 					new Ext.grid.PageRowNumberer(),
-					{ header: '名称', dataIndex: 'name', align: 'center', flex:2},
-					{ header: '描述', dataIndex: 'desc', align: 'center', flex:1 }
+					{ header: '供应商名称', dataIndex: 'name', align: 'center', flex:2},
+					{ header: '地址', dataIndex: 'addr', align: 'center', flex:1 },
+					{ header: '邮编', dataIndex: 'postCode', align: 'center', flex:1 },
+					{ header: '营业执照号码', dataIndex: 'businessLicenseNo', align: 'center', flex:1 },
+					{ header: '税务号', dataIndex: 'taxNo', align: 'center', flex:1 },
+					{ header: '银行', dataIndex: 'bank', align: 'center', flex:1 },
+					{ header: '银行账号', dataIndex: 'bankAccount', align: 'center', flex:1 }
 				],
 				bbar: createPage(store)
         });
@@ -86,9 +90,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             items: grid
         });
         
-        
-	       
-	    
 	    store.on('load', function(){
 	    	sm.deselect(sm.getSelection());
 	    });
@@ -121,9 +122,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         	else{
         		
         	}
-        	var title = '数据字典维护';
+        	var title = '供应商信息维护';
         	
-        	var url = '<%=path%>/lookup/toEdit'+param;
+        	var url = '<%=path%>/supplier/toEdit'+param;
         	ShowWindow(store, title, url, 600, 380);
         	
         }       
@@ -137,7 +138,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 if (btn == 'yes') {
                     Ext.Msg.wait('正在处理，请稍等......');
                     Ext.Ajax.request({
-                        url: '<%=basePath%>lookup/deleteThem',
+                        url: '<%=basePath%>supplier/deleteThem',
                         params: { ids: res  },
                         success: function (response) {
                             Ext.Msg.hide();

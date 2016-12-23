@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import com.google.common.collect.Maps;
 import com.kingen.bean.User;
 import com.kingen.repository.CommonDao;
 import com.kingen.util.BeanUtils;
@@ -169,7 +171,27 @@ public class CommonService<T,PK  extends Serializable> {
 	}
 	
 	
+	/**
+     * 根据是否 {新增/修改} 查询实体 唯一性
+     * @param beanClazz
+     * @param property
+     * @param val
+     * @param rawValue
+     * @param action
+     * @return
+     */
+	public <E> List<E> getEntityBy(String beanClazz,String property, Object val,Object rawValue,String action) {
 	
+		if(StringUtils.isEmpty(action) || "insert".equals(action)){ //新增
+			Map<String,Object> params = Maps.newHashMapWithExpectedSize(1);
+			params.put(property, val);
+			return dao.findByEntity(beanClazz, params);
+		}else if("edit".equals(action)  || "update".equals(action)){
+			return dao.findExcept(beanClazz,property,val,rawValue);
+		}
+		return null;
+		
+	}
 	
 	
 	
@@ -256,11 +278,38 @@ public class CommonService<T,PK  extends Serializable> {
 		dao.delete(bean);
 	}
 	
-	
+	/**
+	 * 物理删除当前对象 ,要求主键是名是ID
+	 * @param ids
+	 */
 	public void delThem(List<String> ids) {
 		Assert.notEmpty(ids,"ID不应为空");
 		for(String id :ids ){
 			dao.delete(id);
+		}
+		
+	}
+	/**
+	 * 物理删除当前对象 
+	 * @param ids
+	 */
+	public void delThem(List<PK> ids,String idName) {
+		Assert.notEmpty(ids,"ID不应为空");
+		for(PK id :ids ){
+			dao.delete(id,idName);
+		}
+		
+	}
+	/**
+	 * 物理删除指定对象 
+	 * @param ids
+	 */
+	public void delThemEntity(String entityName,String idName,List<PK> ids) {
+		Assert.hasText(entityName,"entityName不应为空");
+		Assert.hasText(idName,"idName不应为空");
+		Assert.notEmpty(ids,"ID不应为空");
+		for(PK id :ids ){
+			dao.deleteEntity(entityName,idName,id);
 		}
 		
 	}

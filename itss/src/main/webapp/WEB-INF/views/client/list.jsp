@@ -18,12 +18,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	      	var addBtn= {
 	            	id: 'addBtn',
 	                text: '新增',
-	                iconCls: 'x-button-delete',
+	                iconCls: 'x-button-insert',
 	                handler:function(){edit('insert')} 
 	            },updateBtn= {
                 	id: 'updateBtn',
                     text: '修改',
-                    iconCls: 'x-button-delete',
+                    iconCls: 'x-button-update',
                     handler:function(){ edit('update')} 
                 },delBtn= {
 	            	id: 'delBtn',
@@ -93,11 +93,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   
     	var addBtn2= {
 	                text: '新增',
-	                iconCls: 'x-button-delete',
+	                iconCls: 'x-button-insert',
 	                handler:function(){editUser('insert')} 
 	            },updateBtn2= {
                     text: '修改',
-                    iconCls: 'x-button-delete',
+                    iconCls: 'x-button-update',
                     handler:function(){ editUser('update')} 
                 },delBtn2= {
 	                text: '删除',
