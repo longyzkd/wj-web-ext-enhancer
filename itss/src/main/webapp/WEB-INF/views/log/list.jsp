@@ -127,19 +127,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
      
 
 
-        cboPage.on('select', function (comboBox) {
-        	store.pageSize = parseInt(comboBox.getValue());
-        	store.loadPage(1);
-        });
-
-        var pgCfg = new Ext.PagingToolbar({
-           // pageSize: 50,
-            store: store,
-            displayInfo: true,
-            displayMsg: '显示 {0} - {1} 条记录，总共 {2} 条记录',
-            emptyMsg: "没有记录",
-            items: ['-', '每页显示', cboPage, '条']
-        });
+        
         
         var smLog = Ext.create('Ext.selection.CheckboxModel', { mode: 'MULTI' });
         var gridLog = Ext.create('Ext.grid.Panel', {
@@ -158,7 +146,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                     { header: '类型', dataIndex: 'type', align: 'center', flex:1,renderer:typeRenderer},
                     { header: '时间', dataIndex: 'createDate', align: 'center', flex:2}
 				],
-				bbar: pgCfg
+				bbar: createPage(store)
         });
         
         
