@@ -20,4 +20,5 @@
 							  ③KickoutSessionControlFilter里面的onAccessDenied，ForceLogoutFilter里面的onAccessDenied。
 		①、 ②是写json到response	，③ request的paramter，在loginController获取再在页面用${}获取出错信息
 	
-		3、不要直接使用CommonService，CommonDao。要先定义自己的类继承它，哪怕为空类。
+		3、不要直接使用CommonService，CommonDao。要先定义自己的类继承它，哪怕为空类。必须要定义service，dao，不然commondao不知道具体泛型是什么，会出现 from Object
+		4、EXT页面 组件顺序最好为：先store->插件->grid->viewPort ,从小到大

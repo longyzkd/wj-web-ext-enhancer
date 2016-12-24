@@ -95,11 +95,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			return pgCfg;
 		}
 
-		  function checkBox(sm,idName) {
+		  function checkBox(sm,idName,msg) {
 	            var id;
 	            var selectedCount = sm.getCount();
 	            if (selectedCount == 0) {
-	                Ext.Msg.show({ title: '提示', msg: '未选中任何一个记录，请先选择！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+	                Ext.Msg.show({ title: '提示', msg: msg || '未选中任何一个记录，请先选择！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
 	                return false;
 	            } else if (selectedCount > 1) {
 	                Ext.Msg.show({ title: '提示', msg: '只能选择一个记录，不能同时选择多个！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });

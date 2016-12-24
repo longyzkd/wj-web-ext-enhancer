@@ -92,7 +92,7 @@ public class ShiroDbRealm extends AuthorizingRealm {
 
 	/**
 	 * 授权查询回调函数, 进行鉴权但缓存中无用户的授权信息时调用.
-	 * 比如访问controller方法（@RequeirePermissions）时会调用，然后会放到 AuthorizationInfo 里。再调用其他的需要权限方法不会再进这，直接从info里获取数据
+	 * 比如访问controller方法（@RequeirePermissions）时会调用，然后会放到 AuthorizationInfo 里。再调用其他的需要权限方法不会再进这，直接从info里获取权限数据池
 	 */
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {

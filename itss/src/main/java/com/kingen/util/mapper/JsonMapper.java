@@ -1,5 +1,5 @@
 
-package com.kingen.util;
+package com.kingen.util.mapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +42,7 @@ public class JsonMapper extends ObjectMapper {
 	private static JsonMapper mapper;
 
 	public JsonMapper() {
-		this(Include.NON_EMPTY);
+		this(Include.NON_EMPTY);   //Include.ALWAYS 需要加上这个
 	}
 
 	public JsonMapper(Include include) {

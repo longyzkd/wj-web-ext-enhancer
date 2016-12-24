@@ -38,7 +38,7 @@ import com.kingen.web.workflow.PaginationThreadUtils;
 @Service
 @Transactional
 //@Lazy(value=true)
-public class CommonService<T,PK  extends Serializable> {
+public class   CommonService<T,PK  extends Serializable> {
 	
 	private static Logger logger = LoggerFactory.getLogger(CommonService.class);
 	
@@ -314,7 +314,7 @@ public class CommonService<T,PK  extends Serializable> {
 		
 	}
 	
-	public void update(T bean) throws Exception{
+	public void update(T bean) {
 		dao.update(bean);
 	}
 	/**

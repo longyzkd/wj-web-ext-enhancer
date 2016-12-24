@@ -1,5 +1,3 @@
-/**
- */
 package com.kingen.util;
 
 import java.io.UnsupportedEncodingException;

@@ -14,7 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 @Table(name = "t_storeroom")
-public class Storeroom implements java.io.Serializable {
+public class StoreRoom implements java.io.Serializable {
 
 	// Fields
 
@@ -25,11 +25,11 @@ public class Storeroom implements java.io.Serializable {
 	// Constructors
 
 	/** default constructor */
-	public Storeroom() {
+	public StoreRoom() {
 	}
 
 	/** full constructor */
-	public Storeroom(String name, String pid) {
+	public StoreRoom(String name, String pid) {
 		this.name = name;
 		this.pid = pid;
 	}

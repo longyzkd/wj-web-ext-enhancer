@@ -7,7 +7,6 @@ package com.kingen.web;
 
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -17,12 +16,17 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -38,8 +42,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.kingen.bean.User;
 import com.kingen.util.DateUtils;
 import com.kingen.util.FastjsonFilter;
-
-import groovy.json.StringEscapeUtils;
+import com.kingen.util.mapper.JsonMapper;
 
 
 /**
@@ -64,6 +67,54 @@ public abstract class CommonController {
 		User user = (User) SecurityUtils.getSubject().getPrincipal();
 		return user;
 	}
+	
+	
+	/**
+	 * 客户端返回JSON字符串
+	 * @param response
+	 * @param object
+	 * @return
+	 */
+	protected String renderJsonString(HttpServletResponse response, Object object) {
+		return renderString(response, JsonMapper.toJsonString(object), "application/json");
+	}
+	
+	/**
+	 * 客户端返回字符串
+	 * @param response
+	 * @param string
+	 * @return
+	 */
+	protected String renderString(HttpServletResponse response, String string, String type) {
+		try {
+			response.reset();
+	        response.setContentType(type);
+	        response.setCharacterEncoding("utf-8");
+			response.getWriter().print(string);
+			return null;
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 参数绑定异常
+	 */
+	@ExceptionHandler({BindException.class, ConstraintViolationException.class, ValidationException.class})
+    public String bindException() {  
+        return "error/400";
+    }
+	
+	/**
+	 * 授权登录异常
+	 */
+	@ExceptionHandler({AuthenticationException.class})
+    public String authenticationException() {  
+        return "error/403";
+    }
+	
+	
+	
 	
 	/**
 	 * 初始化数据绑定

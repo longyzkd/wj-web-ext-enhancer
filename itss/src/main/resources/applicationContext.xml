@@ -77,7 +77,13 @@
 <!--     <import resource="classpath:applicationCotext-cache.xml"/> -->
     
     
-        
+    <bean id="mapper" class="org.dozer.DozerBeanMapper">
+	    <property name="mappingFiles">
+	      <list>
+	        <value>classpath:dozer/dozer-mapping.xml</value>
+	      </list>
+	    </property>
+	 </bean>
 	
 	
 		 
