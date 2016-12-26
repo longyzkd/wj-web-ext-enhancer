@@ -49,9 +49,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         var storeTree = Ext.create('Ext.data.TreeStore', {
                 autoLoad: true,
                 storeId:'storeTree',
-                root: {
-					expanded: true
-				},
+                //这个千万不能要
+//                 root: {
+// 					expanded: true
+// 				},
                 model: 'TreeModel',
                // fields: ['id','text'],
                 folderSort: false,
@@ -95,7 +96,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             tbar:tbar1,
             root: {
                 text: "库房",
-                expanded: true,
+               // expanded: true,
                 id:'-1'
             },
             listeners: {

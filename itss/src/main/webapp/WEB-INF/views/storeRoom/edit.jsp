@@ -27,7 +27,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                    name: 'name',
                    fieldLabel: '库房名称'+'<font color=red>*</font>',
                    maxLength: 20,
-                   allowBlank: false
+                   allowBlank: false,
+                   vtype:'checkunique',
+                   beanClazz:'StoreRoom',
+                   property:'name',
+                   action:action
                });
                
             
@@ -77,6 +81,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 listeners: {
                     load: function (store, options) {
                        
+                        
+                        if(action == 'update'){ //只有在修改的时候（看输入的是否和库里的冲突         ） 才需要原始值（新增、查看{都不需要编辑} 都不需要）
+                       		Ext.apply(txtName, {myrawValue:store.getAt(0).get('name')}, {});//在loadRecord之前先赋值，否则myrawValue会为空
+                        }
+                        
                         formRight.getForm().loadRecord(store.getAt(0));
                     }
                 }
