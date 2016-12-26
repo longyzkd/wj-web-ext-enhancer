@@ -26,6 +26,7 @@ public class TreeConverter {
 	
 	private static JsonMapper mapper = new JsonMapper(Include.ALWAYS);
 	
+	private static List<TreeNode> list = new ArrayList<TreeNode>();
 	
 	public static List<Map<String, Object>> tree(List<RightData> ts) {//一级
 		List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
@@ -69,18 +70,41 @@ public class TreeConverter {
 		}
 		return list;
 	}
-	public static List<TreeNode> getChildren(List<TreeNode> all, TreeNode p) {//2..N级
-		List<TreeNode> list = new ArrayList<TreeNode>();
-		for (TreeNode node : all) {
-			if(!StringUtils.isEmpty(node.getParentId())){
-				if(StringUtils.equals(p.getId(), node.getParentId())){//列表中有父类id
-					
-					
-//					list.add(getChildren(all,node));
-				}
-			}
-		}
-		return list;
+	
+	
+	/**
+	 * 递归获得节点下的所有子节点(不包括当前节点)
+	 * @param all 一棵树
+	 * @param p  该节点
+	 * @return
+	 */
+	public static List<TreeNode> getChildren(List<TreeNode> all, TreeNode p) {
+		 for(TreeNode node: all){  
+	            //遍历出父id等于参数的id，add进子节点集合  
+	            if(StringUtils.equals(p.getId(), node.getParentId())){  
+	                //递归遍历下一级  
+	            	getChildren(all,node);  
+	                list.add(node);  //全局变量的使用
+	            }  
+	        }  
+	    return list;  
+	}
+	/**
+	 * 递归获得节点下的所有子节点(不包括当前节点)
+	 * @param all 一棵树
+	 * @param id  该节点
+	 * @return
+	 */
+	public static List<TreeNode> getChildren(List<TreeNode> all, String  id) {
+		for(TreeNode node: all){  
+			//遍历出父id等于参数的id，add进子节点集合  
+			if(StringUtils.equals(id, node.getParentId())){  
+				//递归遍历下一级  
+				getChildren(all,node.getId());  
+				list.add(node);  //全局变量的使用
+			}  
+		}  
+		return list;  
 	}
 	
 	/**
@@ -118,12 +142,12 @@ public class TreeConverter {
 		return "";
 	}
 	/**
-	 * 转成ext格式的树
+	 * 转成ext格式的树，只能是一棵树
 	 * @author wj
 	 * @param src  所有的数据
-	 * @return  复杂的树对象
+	 * @return  一棵复杂的树对象
 	 */
-	public static TreeNode  toComplexTree(List<TreeNode> src) {
+	public static TreeNode  toOneComplexTree(List<TreeNode> src) {
 		
 		Map<String, TreeNode> lookup = Maps.newHashMap();
 		
@@ -148,6 +172,39 @@ public class TreeConverter {
 			}
 		}
 		return null;
+	}
+	/**
+	 * 转成ext格式的树，可以是多棵树,主要用于数据库没有定义根节点的情况
+	 * @author wj
+	 * @param src  所有的数据
+	 * @return  复杂的树对象
+	 */
+	public static List<TreeNode>  toComplexTree(List<TreeNode> src) {
+		
+		Map<String, TreeNode> lookup = Maps.newHashMap();
+		
+		for (TreeNode o : src) {
+			lookup.put(o.getId(), o);
+		}
+		Set<String> keySet = lookup.keySet();
+		for (String id : keySet) {
+			TreeNode value = lookup.get(id);
+			String parentId = value.getParentId();
+			TreeNode parentNode = lookup.get(parentId);
+			if (parentNode != null) {//有父节点
+				parentNode.addChild(value);
+				value.setParent(parentNode);
+			}
+		}
+		List<TreeNode> multipleTree = Lists.newArrayList();
+		for (String id : keySet) {
+			TreeNode value = lookup.get(id);
+			if (value.getParent() == null) {
+				multipleTree.add(value);
+				
+			}
+		}
+		return multipleTree;
 	}
 	
 	

@@ -33,7 +33,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
                 text: '删除',
                 iconCls: 'x-button-delete',
                 handler: function () {
-                	deleteThem();
+                	deleteIt();
                 }
             },{
                 text: '刷新',
@@ -112,7 +112,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 //                     		 text: 'Root11',                        //根节点显示文字  
 //                 	    	expanded: true
 //                 	});        
-                	treePanel.expandAll();//展开树     
+                //	treePanel.expandAll();//展开树     
                 	
                 }     
 
@@ -154,8 +154,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         	
         	var param = '?action=' + action ;
         	if(action!='insert'){//update or view 
+				
+            	
         		var  id = 		checkBox(sm,'id'); 
-        		
+        		if(id =='-1'){
+        			Ext.Msg.show({ title: '提示', msg: '无法编辑根节点!', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+        			return false;
+            	}
         		if(!id){
         			return false;
         		}
@@ -178,6 +183,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         //删除
         function deleteIt() {
             var res = checkBox(sm,'id');
+            if(res =='-1'){
+    			Ext.Msg.show({ title: '提示', msg: '无法删除根节点！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+    			return ;
+        	}
+        	
             if (!res) { return; } 
 
             Ext.Msg.confirm('删除记录', '确认要删除该记录吗?', function (btn) {

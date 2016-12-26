@@ -22,6 +22,14 @@ public class TreeNode {
 	private List<TreeNode> children = Lists.newArrayList();
 	private TreeNode  parent;
 	
+	private boolean expanded = true;
+	
+	public boolean isExpanded() {
+		return expanded;
+	}
+	public void setExpanded(boolean expanded) {
+		this.expanded = expanded;
+	}
 	@JsonIgnore
 	public TreeNode getParent() {
 		return parent;
