@@ -17,7 +17,7 @@ public class TreeNode {
 	private String id;
 	private String parentId;
 	private String text;
-	private boolean leaf;
+	private boolean leaf = true;
 	private String iconCls;
 	private List<TreeNode> children = Lists.newArrayList();
 	private TreeNode  parent;

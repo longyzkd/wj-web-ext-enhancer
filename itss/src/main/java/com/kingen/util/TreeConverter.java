@@ -18,7 +18,7 @@ import com.kingen.vo.TreeNode;
 
 
 /**
- * 递归生成生成静态树
+ * 递归生成静态树
  * @author wj
  *
  */
@@ -72,11 +72,13 @@ public class TreeConverter {
 	}
 	
 	
+	
+	
 	/**
 	 * 递归获得节点下的所有子节点(不包括当前节点)
 	 * @param all 一棵树
 	 * @param p  该节点
-	 * @return
+	 * @return list集合
 	 */
 	public static List<TreeNode> getChildren(List<TreeNode> all, TreeNode p) {
 		 for(TreeNode node: all){  
@@ -93,7 +95,7 @@ public class TreeConverter {
 	 * 递归获得节点下的所有子节点(不包括当前节点)
 	 * @param all 一棵树
 	 * @param id  该节点
-	 * @return
+	 * @return list集合
 	 */
 	public static List<TreeNode> getChildren(List<TreeNode> all, String  id) {
 		for(TreeNode node: all){  
@@ -161,6 +163,7 @@ public class TreeConverter {
 			TreeNode parentNode = lookup.get(parentId);
 			if (parentNode != null) {//有父节点
 				parentNode.addChild(value);
+				parentNode.setLeaf(false);
 				value.setParent(parentNode);
 			}
 		}
@@ -177,7 +180,7 @@ public class TreeConverter {
 	 * 转成ext格式的树，可以是多棵树,主要用于数据库没有定义根节点的情况
 	 * @author wj
 	 * @param src  所有的数据
-	 * @return  复杂的树对象
+	 * @return  复杂的树对象，多棵树
 	 */
 	public static List<TreeNode>  toComplexTree(List<TreeNode> src) {
 		
@@ -192,7 +195,8 @@ public class TreeConverter {
 			String parentId = value.getParentId();
 			TreeNode parentNode = lookup.get(parentId);
 			if (parentNode != null) {//有父节点
-				parentNode.addChild(value);
+				parentNode.addChild(value); 
+				parentNode.setLeaf(false);
 				value.setParent(parentNode);
 			}
 		}
