@@ -3,7 +3,7 @@ package com.kingen.util;
 import java.util.HashMap;
 
 	/**
-	 * 查询参数类
+	 * 查询参数类,hql里面参数只能用p1,p2...
 	 * @author ThinkGem
 	 * @version 2013-8-23
 	 */

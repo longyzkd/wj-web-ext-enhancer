@@ -12,7 +12,7 @@
     <!-- 加载配置属性文件 -->
 	<context:property-placeholder ignore-unresolvable="true" location="classpath:itss.properties" />
 	
-    <!-- 缓存管理器 -->
+    <!-- 缓存管理器 --><!-- shiro封装的 -->
   	<bean id="shiroCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
 		<property name="cacheManager" ref="ehcacheManager"/>
 <!-- 		<property name="cacheManager" ref="springCacheManager"/> -->

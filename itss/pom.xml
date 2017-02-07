@@ -27,6 +27,7 @@
 		<slf4j.version>1.7.7</slf4j.version>
 		<logback.version>1.1.2</logback.version>
 		<jackson.version>2.4.0</jackson.version>
+		<fastjson.version>1.1.37</fastjson.version>
 		<poi.version>3.9</poi.version>
 		
 		<!-- jdbc driver setting -->
@@ -194,7 +195,7 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
-			<version>1.1.37</version>
+			<version>${fastjson.version}</version>
 		</dependency>
 		<!-- JSON end -->
 		

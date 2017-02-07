@@ -240,6 +240,12 @@ public   class CommonDao<T,PK  extends Serializable>  {
 			getCurrentSession().saveOrUpdate(o);
 		}
 	}
+	
+	public <X> void  saveOrUpdateX(X o) {
+		if (o != null) {
+			getCurrentSession().saveOrUpdate(o);
+		}
+	}
 
 	 
 	public List<T> find(String hql) {
@@ -386,6 +392,101 @@ public   class CommonDao<T,PK  extends Serializable>  {
     	return page;
     }
 
+    
+    @SuppressWarnings("unchecked")
+    public <X> Page<X> findPageByHql(Page<X> page ,String hql,Parameter params, Class<X> resultClass){
+    	String  qlString =	hql;
+    	
+    	// get count
+    	String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
+    	Query query = createQuery(countQlString, params);
+    	List<Object> list = query.list();
+    	if (list.size() > 0){
+    		page.setTotal(Integer.valueOf(list.get(0).toString()));
+    	}else{
+    		page.setTotal(list.size());
+    	}
+    	if (page.getTotal() < 1) {
+    		return page;
+    	}
+    	
+    	
+    	// order by
+    	String ql = qlString;
+    	if (StringUtils.isNotBlank(page.getOrderBy())){
+    		ql += " order by " + page.getOrderBy();
+    	}
+    	Query query1 = createQuery(ql, params); 
+    	// set page
+    	query1.setFirstResult(page.getFirstResult());
+    	query1.setMaxResults(page.getLimit()); 
+    	setResultTransformer(query1, resultClass);
+    	page.setDataList(query1.list());
+    	return page;
+    }
+    @SuppressWarnings("unchecked")
+    public <X> Page<X> findPageBySql(Page<X> page ,String sql,Parameter params, Class<X> resultClass){
+    	String  qlString =	sql;
+    	
+    	// get count
+    	String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
+    	Query query = createSqlQuery(countQlString, params);
+    	List<Object> list = query.list();
+    	if (list.size() > 0){
+    		page.setTotal(Integer.valueOf(list.get(0).toString()));
+    	}else{
+    		page.setTotal(list.size());
+    	}
+    	if (page.getTotal() < 1) {
+    		return page;
+    	}
+    	
+    	
+    	// order by
+    	String ql = qlString;
+    	if (StringUtils.isNotBlank(page.getOrderBy())){
+    		ql += " order by " + page.getOrderBy();
+    	}
+    	Query query1 = createSqlQuery(ql, params); 
+    	// set page
+    	query1.setFirstResult(page.getFirstResult());
+    	query1.setMaxResults(page.getLimit()); 
+    	setResultTransformer(query1, resultClass);
+    	page.setDataList(query1.list());
+    	return page;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <X> Page<X> findPageByHql(Page<X> page ,String hql,Parameter params){
+    	String  qlString =	hql;
+    	
+    	// get count
+    	String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
+    	Query query = createQuery(countQlString, params);
+    	List<Object> list = query.list();
+    	if (list.size() > 0){
+    		page.setTotal(Integer.valueOf(list.get(0).toString()));
+    	}else{
+    		page.setTotal(list.size());
+    	}
+    	if (page.getTotal() < 1) {
+    		return page;
+    	}
+    	
+    	
+    	// order by
+    	String ql = qlString;
+    	if (StringUtils.isNotBlank(page.getOrderBy())){
+    		ql += " order by " + page.getOrderBy();
+    	}
+    	Query query1 = createQuery(ql, params); 
+    	// set page
+    	query1.setFirstResult(page.getFirstResult());
+    	query1.setMaxResults(page.getLimit()); 
+    	page.setDataList(query1.list());
+    	return page;
+    }
+    
     
     
     
@@ -978,7 +1079,7 @@ public   class CommonDao<T,PK  extends Serializable>  {
 	}
 	
 	/**
-	 * 设置查询结果类型
+	 * 设置查询结果类型。必须明确是SQLQuery才会进来，如果是Query,及时是SQLQuery类型的，会进下面的方法
 	 * @param query
 	 * @param resultClass
 	 */
@@ -989,10 +1090,11 @@ public   class CommonDao<T,PK  extends Serializable>  {
 			}else if (resultClass == List.class){
 				query.setResultTransformer(Transformers.TO_LIST);
 			}else{
-				query.addEntity(resultClass);
+				query.addEntity(resultClass);  //hibernate托管类,且必须是select * 的形式
 			}
 		}
 	}
+	
 	private void setResultTransformer(Query query, Class<?> resultClass){
 		if (resultClass != null){
 			if (resultClass == Map.class){
@@ -1000,7 +1102,7 @@ public   class CommonDao<T,PK  extends Serializable>  {
 			}else if (resultClass == List.class){
 				query.setResultTransformer(Transformers.TO_LIST);
 			}else{
-				query.setResultTransformer(Transformers.aliasToBean(resultClass));
+				query.setResultTransformer(Transformers.aliasToBean(resultClass));  //任意类
 			}
 		}
 	}
