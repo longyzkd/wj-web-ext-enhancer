@@ -6,7 +6,7 @@
    <configuration>
 	<date-format>yyyy-MM-dd</date-format>
   </configuration>
-          
+ <!-- 库房 -->         
   <mapping >
     <class-a>com.kingen.bean.StoreRoom</class-a>
     <class-b>com.kingen.vo.TreeNode</class-b>
@@ -20,8 +20,22 @@
     </field>
   </mapping>
   
+  <!-- 技能 -->
    <mapping >
     <class-a>com.kingen.bean.SkillCat</class-a>
+    <class-b>com.kingen.vo.TreeNode</class-b>
+    <field>
+      <a>name</a>
+      <b>text</b>
+    </field>
+    <field>
+      <a>pid</a>
+      <b>parentId</b>
+    </field>
+  </mapping>
+  <!-- 资产类型 -->
+   <mapping >
+    <class-a>com.kingen.bean.AssetsType</class-a>
     <class-b>com.kingen.vo.TreeNode</class-b>
     <field>
       <a>name</a>

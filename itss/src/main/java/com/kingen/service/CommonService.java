@@ -76,10 +76,10 @@ public class   CommonService<T,PK  extends Serializable> {
          }
 	}
 	
-	public List<T> list(String entityName) {
+	public <X> List<X> list(String entityName) {
 		
-		String hql = "from "+entityName;
-		List<T> list 	= dao.find(hql);
+//		String hql = "from "+entityName;
+		List<X> list 	= dao.findByEntity(entityName);
 		if( !CollectionUtils.isEmpty(list)  ){
 			return list;
 		}else{
@@ -87,9 +87,9 @@ public class   CommonService<T,PK  extends Serializable> {
 		}
 	}
 	
-	public List<T> list(String entityName,Map<String, Object> params) {
+	public <X> List<X> list(String entityName,Map<String, Object> params) {
 		
-		List<T> list 	= dao.findByEntity(entityName, params);
+		List<X> list 	= dao.findByEntity(entityName, params);
 		if( !CollectionUtils.isEmpty(list)  ){
 			return list;
 		}else{

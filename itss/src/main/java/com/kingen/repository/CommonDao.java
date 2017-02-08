@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import javax.persistence.PreUpdate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.shiro.util.CollectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
@@ -520,6 +522,13 @@ public   class CommonDao<T,PK  extends Serializable>  {
 		Query q = createQuery(hql, params);
 		return q.list();
 	}
+	public <X> List<X> findByEntity(String entityName) {
+		
+//		String hql = queryHqlSetter(entityName,new HashMap<String,Object>());
+//		Query q = createQuery(hql, null);
+//		return q.list();
+		return findByEntity(entityName,new HashMap<String,Object>());
+	}
 	
 	/**
 	 * 查询指定对象的列表
@@ -580,7 +589,8 @@ public   class CommonDao<T,PK  extends Serializable>  {
 	private String queryHqlSetter(String entityName, Map<String, Object> params){
 		Assert.hasText(entityName,"entityName不应为空");
 		String hql = "from "+entityName +" where 1=1 ";
-		if (params != null) {
+		if (!CollectionUtils.isEmpty(params)) {
+//			if (params != null) {
             Set<String> keySet = params.keySet();
             for (String string : keySet) {
             	hql += "and "+string+" =:"+string;

@@ -58,7 +58,7 @@ public class ContractController extends CommonController{
 	public String toEdit(String id,String action,HttpServletResponse response,HttpServletRequest request,Model model){
 		model.addAttribute("action", action);
 		model.addAttribute("id", id);//null的话 前台是空串
-		return "serv/edit"; 
+		return "contract/edit"; 
 	}
 	
 	@RequestMapping(value="one")
