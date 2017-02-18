@@ -15,24 +15,69 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 
 			
 
-	      	var addBtn= {
+	     
+
+	      	 var clientStore = Ext.create('Ext.data.Store', {  
+	                fields: ['code', 'name'],  
+	                autoLoad: true,
+	                proxy: {  
+	                    type: 'ajax',  
+	                    url: '<%=basePath%>contract/combo/Client',
+	                    reader: { type: 'json'}
+	                }  
+	            });     
+	            var clientField = Ext.create('Ext.form.ComboBox', {
+	                fieldLabel: '客户单位',
+	                store: clientStore,
+	                displayField: 'name',
+	                valueField: 'code',
+	                listeners: {
+	                	select: function( combo, records, eOpts ){
+	                		store.load();
+	                    }
+	                }
+	            });
+            
+	        var tbar1 = Ext.create('Ext.toolbar.Toolbar', {
+	            items: [clientField]
+	        });
+	        var tbar2 = Ext.create('Ext.toolbar.Toolbar', {
+	            items: ['合同列表']
+	        });
+
+	     	var addBtn= {
 	            	id: 'addBtn',
 	                text: '新增',
-	                iconCls: 'x-button-delete',
+	                iconCls: 'x-button-insert',
 	                handler:function(){edit('insert')} 
 	            },updateBtn= {
                 	id: 'updateBtn',
                     text: '编辑',
-                    iconCls: 'x-button-delete',
+                    iconCls: 'x-button-update',
                     handler:function(){ edit('update')} 
                 },delBtn= {
 	            	id: 'delBtn',
 	                text: '删除',
 	                iconCls: 'x-button-delete',
 	                handler: deleteThem
+	            },lrzcBtn= {
+	            	id: 'lrzc',
+	                text: '录入资产',
+	                iconCls: 'x-button-heart',
+	                handler: deleteThem
+	            },pzfwBtn= {
+	            	id: 'pzfw',
+	                text: '配置服务',
+	                iconCls: 'x-button-save',
+	                handler: deleteThem
+	            },viewBtn= {
+	            	id: 'view',
+	                text: '查看',
+	                iconCls: 'x-button-eye',
+	                handler: deleteThem
 	            };
-	        var tbar1 = Ext.create('Ext.toolbar.Toolbar', {
-	            items: [addBtn,'-',updateBtn,'-',delBtn]
+	        var tbar3 = Ext.create('Ext.toolbar.Toolbar', {
+	            items: [addBtn,'-',updateBtn,'-',delBtn,'-',lrzcBtn,'-',pzfwBtn,'-',viewBtn]
 	        });
 	       
         
@@ -47,7 +92,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             },
             listeners: {
                 beforeload: function (store, options) {
-            		
+                 var   clientId = 	clientField.getValue();//不要格式化的数据
+               	var params = {'clientId': clientId};
+              		Ext.apply(store.proxy.extraParams, params);
                 }
             }
         });
@@ -58,7 +105,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         var grid = Ext.create('Ext.grid.Panel', {
             region: 'center',
             store: store,
-            dockedItems: [tbar1],
+            dockedItems: [tbar1,tbar2,tbar3],
             //dockedItems: [tbar2,tbar1],
             selModel: sm,
             columnLines: false,
@@ -98,7 +145,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	    //编辑用户
         function edit(action){
         	
-        	var param = '?action=' + action ;
+        	var param = '?action=' + action+'&clientId='+clientField.getValue() ;
         	if(action!='insert'){//update or view 
         		var  id = 	checkBox(sm,'id');
         		
@@ -108,12 +155,23 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
         		 param += "&id=" + id;
         	}
         	else{
+            	if(!clientField.getValue()){
+            		 Ext.Msg.show({
+                         title: '提示',
+                         msg: '请先选择客户' ,
+                         buttons: Ext.Msg.OK,
+                         icon: Ext.Msg.WARN
+                       
+                     });
+
+                     return ;
+                }
         		
         	}
-        	var title = '服务水平维护';
+        	var title = titleName(action)+'合同';
         	
         	var url = '<%=path%>/contract/toEdit'+param;
-        	ShowWindow(store, title, url, 700, 380);
+        	ShowWindow(store, title, url, 800, 480);
         	
         }       
         

@@ -5,7 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.hibernate.annotations.GenericGenerator;
+
+import com.kingen.vo.Comboable;
 
 /**
  * TServiceLv entity.
@@ -14,7 +18,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 @Table(name = "t_service_lv")
-public class ServiceLv implements java.io.Serializable {
+public class ServiceLv implements java.io.Serializable ,Comboable{
 
 	// Fields
 
@@ -155,6 +159,15 @@ public class ServiceLv implements java.io.Serializable {
 
 	public void setLowPriSolveHour(Integer lowPriSolveHour) {
 		this.lowPriSolveHour = lowPriSolveHour;
+	}
+
+	
+	
+
+	@Override
+	@Transient
+	public String getCode() {
+	return id;
 	}
 
 }

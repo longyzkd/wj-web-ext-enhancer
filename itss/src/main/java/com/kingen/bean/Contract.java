@@ -1,10 +1,14 @@
 package com.kingen.bean;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.hibernate.annotations.GenericGenerator;
 
 /**
@@ -34,11 +38,12 @@ public class Contract implements java.io.Serializable {
 	private String contractNo;
 	private String seviceLv;
 	private String contractType;
-	private double contractAmt;
+//	private double contractAmt;
+	private BigDecimal contractAmt;
 	private String serviceBeginTime;
 	private String serviceEndTime;
 	private String desc;
-	private String attach;
+//	private String attach;
 	private String procDefName;
 
 	// Constructors
@@ -50,8 +55,8 @@ public class Contract implements java.io.Serializable {
 	/** full constructor */
 	public Contract(String contractName, String clientId,
 			String clientContactId, String contractNo, String seviceLv,
-			String contractType, double contractAmt, String serviceBeginTime,
-			String serviceEndTime, String desc, String attach,
+			String contractType, BigDecimal contractAmt, String serviceBeginTime,
+			String serviceEndTime, String desc, 
 			String procDefName) {
 		this.contractName = contractName;
 		this.clientId = clientId;
@@ -63,7 +68,6 @@ public class Contract implements java.io.Serializable {
 		this.serviceBeginTime = serviceBeginTime;
 		this.serviceEndTime = serviceEndTime;
 		this.desc = desc;
-		this.attach = attach;
 		this.procDefName = procDefName;
 	}
 
@@ -135,15 +139,15 @@ public class Contract implements java.io.Serializable {
 	}
 
 	@Column(name = "contract_amt", precision = 12)
-	public double getContractAmt() {
+	public BigDecimal getContractAmt() {
 		return this.contractAmt;
 	}
 
-	public void setContractAmt(double contractAmt) {
+	public void setContractAmt(BigDecimal contractAmt) {
 		this.contractAmt = contractAmt;
 	}
 
-	@Column(name = "service_begin_time", length = 32)
+	@Column( name = "service_begin_time", length = 32)
 	public String getServiceBeginTime() {
 		return this.serviceBeginTime;
 	}
@@ -170,14 +174,14 @@ public class Contract implements java.io.Serializable {
 		this.desc = desc;
 	}
 
-	@Column(name = "attach")
-	public String getAttach() {
-		return this.attach;
-	}
-
-	public void setAttach(String attach) {
-		this.attach = attach;
-	}
+//	@Column(name = "attach")
+//	public String getAttach() {
+//		return this.attach;
+//	}
+//
+//	public void setAttach(String attach) {
+//		this.attach = attach;
+//	}
 
 	@Column(name = "proc_def_name", length = 32)
 	public String getProcDefName() {
@@ -188,4 +192,17 @@ public class Contract implements java.io.Serializable {
 		this.procDefName = procDefName;
 	}
 
+	
+	//只能放在get方法上
+	private String unitName;
+	
+	@Transient
+	public String getUnitName() {
+		return unitName;
+	}
+
+	public void setUnitName(String unitName) {
+		this.unitName = unitName;
+	}
+	
 }

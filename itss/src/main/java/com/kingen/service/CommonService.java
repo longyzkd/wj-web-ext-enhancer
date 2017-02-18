@@ -43,8 +43,8 @@ public class   CommonService<T,PK  extends Serializable> {
 	private static Logger logger = LoggerFactory.getLogger(CommonService.class);
 	
 	
-	//@Qualifier(value="commonDao") //要配合@Autowired , // 用@Qualifier会导致泛型消失，不会具体为真正的子类dao
-	//注入真正的实体类型的子类dao
+	//@Qualifier(value="commonDao") //要配合@Autowired , 用@Qualifier会导致泛型消失，不会具体为真正的子类dao
+	//注入真正的实体类型的子类dao,根据T类型
 	@Autowired
 	private CommonDao<T,PK> dao;   
 	
@@ -86,10 +86,30 @@ public class   CommonService<T,PK  extends Serializable> {
 			return Collections.emptyList();
 		}
 	}
+	public <X> List<X> list(Class<X> clazz) {
+		
+//		String hql = "from "+entityName;
+		List<X> list 	= dao.findByEntity(clazz.getSimpleName());
+		if( !CollectionUtils.isEmpty(list)  ){
+			return list;
+		}else{
+			return Collections.emptyList();
+		}
+	}
 	
 	public <X> List<X> list(String entityName,Map<String, Object> params) {
 		
 		List<X> list 	= dao.findByEntity(entityName, params);
+		if( !CollectionUtils.isEmpty(list)  ){
+			return list;
+		}else{
+			return Collections.emptyList();
+		}
+	}
+	
+	public <X> List<X> list(Class<X> clazz,Map<String, Object> params) {
+		
+		List<X> list 	= dao.findByEntity(clazz.getSimpleName(), params);
 		if( !CollectionUtils.isEmpty(list)  ){
 			return list;
 		}else{
@@ -117,6 +137,9 @@ public class   CommonService<T,PK  extends Serializable> {
 	public <X> X uniqueEntity(String entityName,String idName,PK id) {
 		return dao.uniqueEntity(entityName,idName, id);
 	}
+	public <X> X uniqueEntity(Class<X> clazz,String idName,PK id) {
+		return dao.uniqueEntity(clazz.getSimpleName(),idName, id);
+	}
 	
 	/**
 	 * 由参数保证唯一性
@@ -140,7 +163,7 @@ public class   CommonService<T,PK  extends Serializable> {
 	}
 	 
 	/**
-	 * 当前对象的带参数分页集合
+	 * 当前对象的带参数分页集合. 要求params MAP的key 必须是entity的属性
 	 * @param page
 	 * @return
 	 */
@@ -166,6 +189,11 @@ public class   CommonService<T,PK  extends Serializable> {
 	 */
 	public <X> Page<X> find(Page<X> page ,String entityName) {
 		return dao.findByEntity(page, entityName, null);
+		
+		
+	}
+	public <X> Page<X> find(Page<X> page ,Class<X> clazz) {
+		return dao.findByEntity(page, clazz.getSimpleName(), null);
 		
 		
 	}

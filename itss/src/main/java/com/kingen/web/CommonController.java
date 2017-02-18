@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,12 +23,17 @@ import javax.validation.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -39,10 +45,15 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.google.common.collect.Lists;
 import com.kingen.bean.User;
+import com.kingen.service.CommonService;
+import com.kingen.service.account.AccountService;
 import com.kingen.util.DateUtils;
 import com.kingen.util.FastjsonFilter;
+import com.kingen.util.SpringContextHolder;
 import com.kingen.util.mapper.JsonMapper;
+import com.kingen.vo.Comboable;
 
 
 /**
@@ -52,12 +63,21 @@ import com.kingen.util.mapper.JsonMapper;
  * @author 
  * @version 2013-3-23
  */
+@Controller
 public abstract class CommonController {
 
 	/**
 	 * 日志对象
 	 */
 	protected Logger logger = LoggerFactory.getLogger(getClass());
+	
+	//无法直接使用commonservice，在注入他的commondao时候，会出现多种类型
+//	private static CommonService service = SpringContextHolder.getBean(CommonService.class);
+	
+	
+	@Autowired
+	private  AccountService service ;
+	
 	
 	/**
 	 * current session's user
@@ -294,5 +314,18 @@ public abstract class CommonController {
 
 	
 	
-	
+	 
+	@RequestMapping(value="combo/{entityName}")
+	protected void data(@PathVariable("entityName") String entityName,HttpServletResponse response) {
+		List<Object> result = service.list(entityName);
+		List<Comboable> com = Lists.newArrayList();
+		if(!CollectionUtils.isEmpty(result)){
+			for(Object o : result){
+				if(o instanceof Comboable){
+					com.add((Comboable)o);
+				}
+			}
+		}
+		writeJson(response,com);
+	}
 }

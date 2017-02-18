@@ -1,24 +1,40 @@
 package com.kingen.web;
 
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.activiti.engine.repository.Deployment;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.kingen.aop.ControllerLogAnnotation;
+import com.kingen.bean.ClientContact;
 import com.kingen.bean.Contract;
+import com.kingen.bean.ContractAttach;
 import com.kingen.service.contract.ContractService;
 import com.kingen.util.JsonResultBuilder;
 import com.kingen.util.Page;
+import com.kingen.util.Parameter;
+import com.kingen.util.StringUtils;
+import com.kingen.vo.Comboable;
 
 
 /**
@@ -49,15 +65,44 @@ public class ContractController extends CommonController{
 	 * 查找分页后的grid
 	 */
 	@RequestMapping(value="data")
-	public void data(Page<Contract> page,HttpServletResponse response) {
-		page = service.find(page);
+	public void data(String clientId,Page<Contract> page,HttpServletResponse response,Model model) {
+		if(!StringUtils.isEmpty(clientId)){
+			Parameter p = new Parameter(clientId);
+			page = service.findContractVo(page,p);
+		}
+		
+		writeJson(response,page);
+	}
+	
+	@RequestMapping(value="clientContactData/{clientId}")
+	protected void clientContactData(@PathVariable("clientId") String clientId,HttpServletResponse response) {
+		List<ClientContact> result = service.findClientContacts(clientId);
+		List<Comboable> com = Lists.newArrayList();
+		if(!CollectionUtils.isEmpty(result)){
+			for(Object o : result){
+				if(o instanceof Comboable){
+					com.add((Comboable)o);
+				}
+			}
+		}
+		writeJson(response,com);
+	}
+	
+	
+	/**
+	 * 附件data
+	 */
+	@RequestMapping(value="attach/data")
+	public void attachData(Page<ContractAttach> page,HttpServletResponse response) {
+		page = service.find(page, ContractAttach.class);
 		writeJson(response,page);
 	}
 	
 	@RequestMapping(value="toEdit")
-	public String toEdit(String id,String action,HttpServletResponse response,HttpServletRequest request,Model model){
+	public String toEdit(String id,String action,String clientId,HttpServletResponse response,HttpServletRequest request,Model model){
 		model.addAttribute("action", action);
 		model.addAttribute("id", id);//null的话 前台是空串
+		model.addAttribute("clientId", clientId);//null的话 前台是空串
 		return "contract/edit"; 
 	}
 	
@@ -136,7 +181,56 @@ public class ContractController extends CommonController{
 		writeJson(response,json);
 	}
 
+	  @RequestMapping(value = "/attach/upload")
+	    public void upload( String contractId,
+	    					  @RequestParam(value = "file", required = false) MultipartFile file,
+	    					  RedirectAttributes redirectAttributes, HttpServletResponse response) {
+	        String fileName = file.getOriginalFilename();
+	        
+	        JSONObject jsonObject= new JSONObject();
+	        try {
+	            InputStream fileInputStream = file.getInputStream();
+
+	            String extension = FilenameUtils.getExtension(fileName);
+	            
+	            ContractAttach attach = new ContractAttach();
+	            
+	            attach.setAttachName(fileName);
+	            attach.setContractId(contractId);
+	            //hibernate4已经取消createBlob
+//	            Blob blob = Hibernate.createBlob(file.getInputStream());
+	            byte[] attachContent =FileCopyUtils.copyToByteArray(fileInputStream);  
+	            attach.setAttachContent(attachContent);
+	            service.addObj(attach);
+	            
+	            
+//	            
+//	            if (extension.equals("zip") || extension.equals("rar")) {
+//	                ZipInputStream zip = new ZipInputStream(fileInputStream);
+//	                deployment = repositoryService.createDeployment().addZipInputStream(zip).deploy();
+//	                
+//	                attach.setAttach(attach);
+//	            } else {
+//	                deployment = repositoryService.createDeployment().addInputStream(fileName, fileInputStream).deploy();
+//	                
+//	                attach.setAttach(attach);
+//	            }
+	          
+	            
+	            jsonObject = JsonResultBuilder.success(true).msg("上传成功！").json();
+	            
+	            
+	        } catch (Exception e) {
+//	        	redirectAttributes.addFlashAttribute("message", "流程部署失败！");
+	        	jsonObject = JsonResultBuilder.success(false).msg("上传失败！").json();
+	            logger.error("上传失败！", e);
+	        }
+
+	        
+	        writeJson(response,jsonObject); 
+	        
+	    }
 	
-	
+	 
 }
 

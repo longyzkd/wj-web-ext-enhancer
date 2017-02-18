@@ -32,6 +32,7 @@
 		
 		<!-- jdbc driver setting -->
 		<tomcat-jdbc.version>7.0.53</tomcat-jdbc.version>
+		<mysql-jdbc.version>5.1.22</mysql-jdbc.version>
 			
 			
 		<!-- environment setting -->
@@ -120,7 +121,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.22</version>
+			<version>${mysql-jdbc.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 

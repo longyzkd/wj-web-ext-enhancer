@@ -43,12 +43,14 @@ import com.kingen.util.Page;
 import com.kingen.util.Parameter;
 import com.kingen.util.Reflections;
 
-
 /**
  * 
  * @author wj
+ *
  * @param <T>  entity type
+ * @param <PK>  PK
  * @date  2016-11-24
+ * 
  */
 //会不会生成多个不同泛型的commondao
 //因为有泛型的存在，不会直接实例化，只有userDao extends CommonDao<User> 传入类型了，才会实例化CommonDao,并在构造器里持有类型
@@ -396,7 +398,8 @@ public   class CommonDao<T,PK  extends Serializable>  {
 
     
     @SuppressWarnings("unchecked")
-    public <X> Page<X> findPageByHql(Page<X> page ,String hql,Parameter params, Class<X> resultClass){
+//    public  Page<Object> findPageByHql(Page<Object> page ,String hql,Parameter params, Class<Object> resultClass){
+    	public <X> Page<X> findPageByHql(Page<X> page ,String hql,Parameter params, Class<X> resultClass){
     	String  qlString =	hql;
     	
     	// get count
@@ -450,6 +453,46 @@ public   class CommonDao<T,PK  extends Serializable>  {
     		ql += " order by " + page.getOrderBy();
     	}
     	Query query1 = createSqlQuery(ql, params); 
+    	// set page
+    	query1.setFirstResult(page.getFirstResult());
+    	query1.setMaxResults(page.getLimit()); 
+    	setResultTransformer(query1, resultClass);
+    	page.setDataList(query1.list());
+    	return page;
+    }
+    
+    /**
+     * 查询hibernate托管实体类，在setResultTransformer时候只适合于sql（transient字段值为null）
+     * @param page
+     * @param sql
+     * @param params
+     * @param resultClass
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public <X> Page<X> findPageHiberEntityBySql(Page<X> page ,String sql,Parameter params, Class<X> resultClass){
+    	String  qlString =	sql;
+    	
+    	// get count
+    	String countQlString = "select count(*) " + removeSelect(removeOrders(qlString));  
+    	SQLQuery query = createSqlQuery(countQlString, params);
+    	List<Object> list = query.list();
+    	if (list.size() > 0){
+    		page.setTotal(Integer.valueOf(list.get(0).toString()));
+    	}else{
+    		page.setTotal(list.size());
+    	}
+    	if (page.getTotal() < 1) {
+    		return page;
+    	}
+    	
+    	
+    	// order by
+    	String ql = qlString;
+    	if (StringUtils.isNotBlank(page.getOrderBy())){
+    		ql += " order by " + page.getOrderBy();
+    	}
+    	SQLQuery query1 = createSqlQuery(ql, params); 
     	// set page
     	query1.setFirstResult(page.getFirstResult());
     	query1.setMaxResults(page.getLimit()); 
