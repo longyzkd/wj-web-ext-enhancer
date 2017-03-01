@@ -636,7 +636,7 @@ public   class CommonDao<T,PK  extends Serializable>  {
 //			if (params != null) {
             Set<String> keySet = params.keySet();
             for (String string : keySet) {
-            	hql += "and "+string+" =:"+string;
+            	hql += " and "+string+" =:"+string;
             }
         }
 		
@@ -657,7 +657,7 @@ public   class CommonDao<T,PK  extends Serializable>  {
 		if ( !ArrayUtils.isEmpty(fieldNames)) {
 			
 			for (String field : fieldNames) {
-				hql += "and "+field+" =:"+field;
+				hql += " and "+field+" =:"+field;
 			}
 		}
 		return hql;
