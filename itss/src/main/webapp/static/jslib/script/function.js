@@ -299,6 +299,45 @@ function ShowWindow(storeChannel, title, url, x, y) {
     
 }
 
+
+//wj 
+function showWindow(storeChannel, title, url, x, y) {
+	
+    var winTitle = title;
+   var  _window = Ext.getCmp('_window');
+    if (_window != null) {
+    	_window.destroy(true);
+    	_window = null;
+    }
+    if(!_window){
+    	
+    	 _window = new Ext.window.Window({
+             id:'_window',
+             title: winTitle,
+             html: '<iframe scrolling="auto" frameborder="0" width="100%" height="100%" src="' + url + '"></iframe>',
+             width: x,
+             height: y,
+             autoscroll: true,
+             modal: true,
+             resizeable: false,
+             collapsible: true,
+             closeAction: 'close',
+             bodyStyle: 'padding:5px;',
+             layout: 'fit'
+         });
+    }
+   
+    _window.on("close", function () {
+        if (storeChannel != null && storeChannel != "undefined") {
+            storeChannel.reload();
+        }
+    });
+    _window.show();
+    return false;
+    
+}
+
+
 function ShowWindows(storeChannels, title, url, x, y) {
     var winTitle = title;
     var win = parent;
