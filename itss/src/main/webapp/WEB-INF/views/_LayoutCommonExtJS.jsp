@@ -113,7 +113,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	            var ids = [];
 	            var selectedCount = sm.getCount();
 	            if (selectedCount == 0) {
-	                Ext.Msg.show({ title: '提示', msg: '未选中任何一个用户，请先选择！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
+	                Ext.Msg.show({ title: '提示', msg: '未选中任何一个记录，请先选择！', buttons: Ext.Msg.OK, icon: Ext.Msg.WARNING });
 	                return false;
 	            } else {
 	                Ext.each(sm.getSelection( ),function(cur){
@@ -153,3 +153,4 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			}
     </script>
     <script src="<%=path%>/static/jslib/ExtJs/vTypes.js" type="text/javascript"></script>
+ <script src="<%=path%>/static/jslib/ExtJs/TreePicker.js" type="text/javascript"></script>
